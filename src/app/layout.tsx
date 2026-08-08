@@ -24,17 +24,28 @@ const hindSiliguri = Hind_Siliguri({
   display: 'swap',
 });
 
-const SITE_URL = 'https://eee-engineering-olive.vercel.app';
-const SITE_NAME = 'Sonargaon University — EEE Department';
+/**
+ * Site-wide names and the canonical URL.
+ *
+ * These are the strings a search result and a shared link show, and they were
+ * written into this file — so a copy of this codebase announced itself as the
+ * department it was copied from, at an address belonging to that department's
+ * site. The URL now comes from the environment (set NEXT_PUBLIC_SITE_URL in
+ * Vercel); the names are the one place left to edit when starting a new
+ * department site, and they are together, at the top, for that reason.
+ */
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+const DEPARTMENT_NAME = 'Naval Architecture and Marine Engineering';
+const SITE_NAME = `Sonargaon University — ${DEPARTMENT_NAME} Department`;
 const SITE_DESCRIPTION =
-  'Department of Electrical and Electronics Engineering at Sonargaon University — programs, faculty, research areas, labs, admissions, and campus services.';
+  'Department of Naval Architecture and Marine Engineering at Sonargaon University — the first and only private university department in Bangladesh offering a B.Sc. in Naval Architecture and Marine Engineering. Programs, faculty, research, laboratories, admissions and campus services.';
 const OG_IMAGE = '/assets/og-banner.webp';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_NAME,
-    template: '%s — Sonargaon University EEE',
+    template: `%s — Sonargaon University ${DEPARTMENT_NAME}`,
   },
   description: SITE_DESCRIPTION,
   alternates: {
@@ -52,7 +63,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: 'Sonargaon University — Department of Electrical and Electronics Engineering',
+        alt: `Sonargaon University — Department of ${DEPARTMENT_NAME}`,
       },
     ],
   },

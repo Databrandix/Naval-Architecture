@@ -8,11 +8,9 @@ import {ChevronRight, Home} from 'lucide-react';
 // Per-image alt text now comes from DepartmentIdentity.heroImage{N}Alt
 // (Phase 3). When an admin replaces a hero image, they edit the
 // matching alt in the same form. Null alt → generic slot label.
-const FALLBACK_ALTS = [
-  'Sonargaon University Electrical and Electronics Engineering Department',
-  'Sonargaon University Electrical and Electronics Engineering students and faculty',
-  'Sonargaon University Electrical and Electronics Engineering campus',
-];
+// Built from the department name rather than written out, so a copy of this
+// codebase never describes the department it was copied from.
+const FALLBACK_ALT_SUFFIXES = ['Department', 'students and faculty', 'campus'];
 
 type HeroSectionProps = {
   imageUrls: readonly string[];
@@ -22,6 +20,12 @@ type HeroSectionProps = {
   // as imageUrls; defaults to 50 per slot if a value is missing.
   imageVerticalPercents: readonly number[];
   breadcrumbLabel: string;
+  /** Department name with the "Department of" prefix removed — the eyebrow above already says it. */
+  departmentTitle: string;
+  /** Shown in yellow after the title, e.g. NAME. */
+  shortCode: string;
+  /** One line under the headline. */
+  tagline: string;
 };
 
 export default function HeroSection({
@@ -29,10 +33,15 @@ export default function HeroSection({
   imageAlts,
   imageVerticalPercents,
   breadcrumbLabel,
+  departmentTitle,
+  shortCode,
+  tagline,
 }: HeroSectionProps) {
   const heroImages = imageUrls.map((src, i) => ({
     src,
-    alt: imageAlts[i] ?? FALLBACK_ALTS[i] ?? `Sonargaon University Electrical and Electronics Engineering — slide ${i + 1}`,
+    alt:
+      imageAlts[i] ??
+      `Sonargaon University ${departmentTitle} ${FALLBACK_ALT_SUFFIXES[i] ?? `— slide ${i + 1}`}`,
     verticalPercent: imageVerticalPercents[i] ?? 50,
   }));
   const [activeImage, setActiveImage] = useState(0);
@@ -108,7 +117,7 @@ export default function HeroSection({
             transition={{ delay: 0.35, duration: 0.8 }}
             className="text-3xl md:text-5xl lg:text-6xl font-display font-bold text-white uppercase tracking-tight leading-tight drop-shadow-2xl"
           >
-            Electrical &amp; <br /> Electronics <span className="text-button-yellow">(EEE)</span>
+            {departmentTitle} <span className="text-button-yellow">({shortCode})</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -118,7 +127,7 @@ export default function HeroSection({
             transition={{ delay: 0.6, duration: 0.7 }}
             className="text-sm md:text-base lg:text-lg text-white/85 font-light max-w-2xl leading-relaxed"
           >
-            Shaping engineers who design tomorrow&rsquo;s machines, systems, and innovations.
+            {tagline}
           </motion.p>
         </div>
       </Container>

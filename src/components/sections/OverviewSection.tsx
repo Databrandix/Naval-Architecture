@@ -4,7 +4,21 @@ import Image from 'next/image';
 import {motion} from 'motion/react';
 import Container from '../ui/Container';
 
-export default function OverviewSection() {
+/**
+ * The heading and paragraph used to be written into this file, which meant the
+ * homepage introduced whichever department the code was last copied from and
+ * no admin could correct it. Both now come from the About Overview row, so the
+ * homepage and /about/overview say the same thing and are edited in one place.
+ */
+export default function OverviewSection({
+  heading,
+  body,
+  imageAlt,
+}: {
+  heading: string;
+  body: string;
+  imageAlt: string;
+}) {
   return (
     <section className="bg-white py-8 md:py-16">
       <Container className="!max-w-[1120px]">
@@ -14,7 +28,7 @@ export default function OverviewSection() {
           viewport={{ once: true }}
           className="mb-6 md:mb-8 text-center text-2xl font-bold leading-tight text-primary md:text-[25px]"
         >
-          Department of Electrical and Electronics Engineering (EEE)
+          {heading}
         </motion.h2>
 
         <div className="mx-auto grid max-w-[1090px] items-start gap-8 lg:gap-12 lg:grid-cols-[520px_1fr]">
@@ -25,7 +39,7 @@ export default function OverviewSection() {
             className="order-2 lg:order-1 space-y-6"
           >
             <p className="text-justify text-[16px] font-medium leading-[1.75] tracking-[0.035em] text-black">
-              At the heart of innovation and excellence, the Department of Electrical and Electronics Engineering is committed to shaping future leaders in the field. Explore the dynamic world of electrical and electronics engineering, where creativity meets technology, and where ideas transform into groundbreaking solutions. With a focus on interdisciplinary collaboration and real-world applications, our department prepares students to tackle complex challenges and contribute to the advancement of technology and society.
+              {body}
             </p>
 
             <div className="grid gap-5 sm:grid-cols-2">
@@ -52,7 +66,7 @@ export default function OverviewSection() {
           >
             <Image
               src="/assets/homeimg.webp"
-              alt="Sonargaon University Electrical and Electronics Engineering students engaged in laboratory work"
+              alt={imageAlt}
               width={1600}
               height={900}
               sizes="(min-width: 1024px) 540px, 100vw"

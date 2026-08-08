@@ -2,6 +2,7 @@ import dynamic from 'next/dynamic';
 import HeroSection from '@/components/sections/HeroSection';
 import {
   getDepartmentIdentity,
+  getAboutOverview,
   getProgramsWithCta,
   getResearchAreas,
   getLabs,
@@ -45,15 +46,17 @@ const ServicesSection = dynamic(() => import('@/components/sections/ServicesSect
 });
 
 export default async function HomePage() {
-  const [dept, programs, researchAreas, labs, newsTop, eventsTop, noticesTop] = await Promise.all([
-    getDepartmentIdentity(),
-    getProgramsWithCta(),
-    getResearchAreas(),
-    getLabs(),
-    getNewsHomeTop(),
-    getEventsHomeTop(),
-    getNoticesHomeTop(),
-  ]);
+  const [dept, overview, programs, researchAreas, labs, newsTop, eventsTop, noticesTop] =
+    await Promise.all([
+      getDepartmentIdentity(),
+      getAboutOverview(),
+      getProgramsWithCta(),
+      getResearchAreas(),
+      getLabs(),
+      getNewsHomeTop(),
+      getEventsHomeTop(),
+      getNoticesHomeTop(),
+    ]);
   return (
     <>
       <HeroSection
@@ -65,8 +68,20 @@ export default async function HomePage() {
           dept.heroImage3VerticalPercent,
         ]}
         breadcrumbLabel={dept.breadcrumbLabel}
+        /* The eyebrow above the headline already reads "Department of", so the
+           headline itself must not repeat it. */
+        departmentTitle={dept.name.replace(/^Department of\s+/i, '')}
+        shortCode={dept.shortCode}
+        tagline="Shaping naval architects and marine engineers who design tomorrow’s ships, marine structures, and offshore systems."
       />
-      <OverviewSection />
+      {/* The About Overview row is a required singleton, so `overview` is only
+          ever null if the seed has not run; falling back to the department name
+          keeps the homepage rendering instead of failing on a fresh database. */}
+      <OverviewSection
+        heading={dept.name}
+        body={overview?.paragraphs[0] ?? ''}
+        imageAlt={overview?.heroTitle ?? dept.name}
+      />
       <ProgramsSection programs={programs} />
       <QuickLinksSection />
       <NoticesSection notices={noticesTop} />

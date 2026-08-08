@@ -40,7 +40,7 @@ const staticPages: SearchItem[] = [
   { title: 'Mission & Vision', type: 'Page', href: '/about/mission-vision', description: "Department's mission and long-term vision" },
   { title: 'Laboratory Facility', type: 'Page', href: '/about/laboratory-facility', description: 'Departmental labs and equipment' },
   { title: 'Lab Facility', type: 'Page', href: '/about/lab-facility', description: 'List of all departmental labs' },
-  { title: 'SU Electrical and Electronic Club', type: 'Page', href: '/about/club', description: 'SU Electrical and Electronic Club (SUEEC)' },
+  { title: 'SU NAME Club', type: 'Page', href: '/about/club', description: 'Student club of the Department of Naval Architecture and Marine Engineering' },
 
   // Faculty
   { title: 'Faculty Members', type: 'Page', href: '/faculty-member', description: 'List of all faculty members' },
