@@ -85,7 +85,11 @@ export default function NoticesClient({ notices }: { notices: readonly NoticeCar
           {filtered.map((n) => {
             const catStyle = CATEGORY_STYLES[n.category] ?? 'bg-gray-100 text-gray-700';
             const isPdf = n.fileType === 'pdf';
-            const FileIcon = isPdf ? FileText : ImageIcon;
+            /* A notice whose attachment lives elsewhere — an examination
+               routine kept as a Google Sheet, say — can be opened but not
+               downloaded, so it gets a link icon and no Download button. */
+            const isExternalLink = n.fileType === 'link';
+            const FileIcon = isExternalLink ? ExternalLink : isPdf ? FileText : ImageIcon;
             return (
               <article
                 key={n.slug}
@@ -128,14 +132,16 @@ export default function NoticesClient({ notices }: { notices: readonly NoticeCar
                       View Full Notice
                       <ExternalLink size={14} className="opacity-80" />
                     </a>
-                    <a
-                      href={withAttachmentDownload(n.fileUrl)}
-                      download={n.fileName ?? undefined}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white text-sm font-semibold rounded-md transition-colors"
-                    >
-                      <Download size={16} />
-                      Download
-                    </a>
+                    {!isExternalLink && (
+                      <a
+                        href={withAttachmentDownload(n.fileUrl)}
+                        download={n.fileName ?? undefined}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white text-sm font-semibold rounded-md transition-colors"
+                      >
+                        <Download size={16} />
+                        Download
+                      </a>
+                    )}
                   </div>
                 )}
               </article>
