@@ -1,0 +1,1459 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ════════════════════════════════════════════════════════════════
+//  AUTH  (Better Auth, no admin plugin, no verification table,
+//         no emailVerified — stripped at Prisma extension layer)
+// ════════════════════════════════════════════════════════════════
+
+enum Role {
+  super_admin
+  admin
+}
+
+// TS source uses 'full-time' / 'part-time' (hyphenated). Prisma
+// enum identifiers disallow hyphens, so we use underscores here;
+// seed + admin layer maps `'full-time'` ↔ `full_time`.
+enum FacultyType {
+  leadership
+  full_time
+  part_time
+}
+
+model User {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  name        String
+
+  role        Role      @default(admin)
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  sessions    Session[]
+  accounts    Account[]
+
+  @@index([role])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("session")
+}
+
+model Account {
+  id         String   @id @default(cuid())
+  userId     String
+  providerId String
+  accountId  String
+  password   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+// ════════════════════════════════════════════════════════════════
+//  CONTENT — SINGLETONS
+// ════════════════════════════════════════════════════════════════
+
+model DepartmentIdentity {
+  id                 String   @id @default("singleton")
+  name               String
+  shortCode          String
+  facultyName        String
+  primaryColor       String
+  accentColor        String
+  buttonColor        String
+  logoUrl            String
+  logoPublicId       String?
+  breadcrumbLabel    String
+  heroImage1Url             String
+  heroImage1PublicId        String?
+  heroImage1Alt             String?
+  heroImage1VerticalPercent Int      @default(50)
+  heroImage2Url             String
+  heroImage2PublicId        String?
+  heroImage2Alt             String?
+  heroImage2VerticalPercent Int      @default(50)
+  heroImage3Url             String
+  heroImage3PublicId        String?
+  heroImage3Alt             String?
+  heroImage3VerticalPercent Int      @default(50)
+  updatedAt                 DateTime @updatedAt
+
+  @@map("department_identity")
+}
+
+model UniversityIdentity {
+  id            String   @id @default("singleton")
+  name          String
+  address       String   @db.Text
+  phones        String[]
+  emails        String[]
+  facebookUrl   String?
+  instagramUrl  String?
+  youtubeUrl    String?
+  linkedinUrl   String?
+  xUrl          String?
+  tiktokUrl     String?
+  whatsappUrl   String?
+  threadsUrl    String?
+  erpUrl        String?
+  applyUrl      String?
+  libraryUrl    String?
+  iqacUrl       String?
+  careerUrl     String?
+  noticeUrl     String?
+  copyrightText String
+  mapEmbedUrl   String?  @db.Text
+  logoUrl       String
+  logoPublicId  String?
+
+  // Phase 9 — contact form recipient. Null = email delivery
+  // disabled (DB-only mode). Admin sets in /admin/university-identity.
+  contactSubmissionEmail String?
+
+  updatedAt     DateTime @updatedAt
+
+  @@map("university_identity")
+}
+
+// ════════════════════════════════════════════════════════════════
+//  CONTENT — LISTS
+// ════════════════════════════════════════════════════════════════
+
+model Program {
+  id              String   @id @default(cuid())
+  programName     String
+  degreeCode      String   @unique
+  duration        String
+  description     String   @db.Text
+  displayOrder    Int
+
+  imageUrl        String?
+  imagePublicId   String?
+  specializations String[]
+  cta             String?
+  ctaHref         String?
+
+  // Phase 8b — back-relation for ProgramFeeStructure (1:1, optional).
+  // Program admin form stays focused on academic metadata (per
+  // constraint #12); fee structure lives at /admin/program-fee-structures.
+  feeStructure    ProgramFeeStructure?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("program")
+}
+
+model ResearchArea {
+  id           String   @id @default(cuid())
+  iconName     String?
+  iconPublicId String?
+  iconUrl      String?
+  areaName     String
+  description  String?  @db.Text
+  displayOrder Int
+
+  // Featured slot — exactly one row should have isFeatured=true.
+  // Renders into the right-hand card on MajorResearchSection.
+  // featuredHeading is optional override for the card's <h3>; null →
+  // renderer falls back to areaName (keeps grid + featured visually
+  // in sync unless an editor intentionally wants a richer title).
+  isFeatured              Boolean @default(false)
+  featuredHeading         String?
+  featuredImageUrl        String?
+  featuredImagePublicId   String?
+  featuredDescription     String? @db.Text
+  featuredCtaHref         String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@index([isFeatured])
+  @@map("research_area")
+}
+
+// Faculty — Phase 2. Drives /faculty-member (list + [slug] detail)
+// and the Dean's-message / Head's-message about pages via
+// nullable message-extras columns on the same row.
+model Faculty {
+  id              String      @id @default(cuid())
+  slug            String      @unique
+  name            String
+  designation     String
+  secondaryTitle  String?
+  badge           String?
+  type            FacultyType
+  displayOrder    Int
+
+  // Photo (Cloudinary-paired, same convention as Program.imageUrl)
+  photoUrl        String?
+  photoPublicId   String?
+
+  // Contact (all optional)
+  email           String?
+  phone           String?
+  suId            String?
+  // Per-faculty office address. Nullable: when null the public
+  // faculty page falls back to UniversityIdentity.address (the
+  // shared institutional address). Lets a member with a different
+  // campus / off-site office override the default without forcing
+  // every faculty row to re-enter the central address.
+  officeAddress   String?     @db.Text
+
+  // Variable-shape label/value list — `{label, value}[]`
+  personalInfo    Json?
+
+  // 8 detail sections — each can be:
+  //   string | string[] | { heading: string; items: string[] }[]
+  // Json is the only realistic storage for that union.
+  academicQualification  Json?
+  trainingExperience     Json?
+  teachingArea           Json?
+  publications           Json?
+  research               Json?
+  awards                 Json?
+  membership             Json?
+  previousEmployment     Json?
+
+  // Dean / Head extras — flat nullable columns; only the 0–1 row(s)
+  // flagged isDean / isHead populate these.
+  isDean                    Boolean   @default(false)
+  isHead                    Boolean   @default(false)
+  messageOverline           String?
+  messageHeading            String?
+  messageParagraphs         String[]
+  messagePhotoUrl           String?
+  messagePhotoPublicId      String?
+  messageTitleLine1         String?
+  messageTitleLine2         String?
+  messageHeroImageUrl              String?
+  messageHeroImagePublicId         String?
+  messageHeroImageVerticalPercent  Int     @default(50)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([type, displayOrder])
+  @@index([isDean])
+  @@index([isHead])
+  @@map("faculty")
+}
+
+// ════════════════════════════════════════════════════════════════
+//  CHROME — NAVBAR + FOOTER STRUCTURE
+//  Phase 3. Drives navbar (top bar, quick-access grid, main nav
+//  groups + items) and footer (4 link columns). Everything that
+//  was a hardcoded array in Navbar.tsx / Footer.tsx now lives here.
+// ════════════════════════════════════════════════════════════════
+
+model TopLink {
+  // The thin top-bar row above the main navbar (Virtual Tour, IQAC,
+  // Career, Archive, Contact). Hidden on mobile; collapses on scroll.
+  id           String   @id @default(cuid())
+  name         String
+  href         String?  // null when isDisabled (e.g. "Virtual Tour", "Archive" have no destination yet)
+  isExternal   Boolean  @default(false)
+  isDisabled   Boolean  @default(false)
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("top_link")
+}
+
+model QuickAccessItem {
+  // The 3-col grid in scrolled-navbar's right dropdown + mobile
+  // drawer "Services" section. Single source of truth — both
+  // surfaces render from this list.
+  id           String   @id @default(cuid())
+  name         String
+  href         String?
+  iconName     String   // Lucide icon name (BookOpen, GraduationCap, …)
+  isExternal   Boolean  @default(false)
+  isDisabled   Boolean  @default(false)
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("quick_access_item")
+}
+
+model MainNavGroup {
+  // Each entry on the main nav bar (About, Faculty Member, Admission,
+  // Student Society, Contact). `hasDropdown=false` → plain link
+  // (href required, items empty). `hasDropdown=true` → dropdown
+  // panel (href ignored, title + items drive the panel).
+  id           String        @id @default(cuid())
+  name         String
+  href         String?
+  hasDropdown  Boolean       @default(false)
+  title        String?       // dropdown header text (usually same as name)
+  displayOrder Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  items        MainNavItem[]
+
+  @@index([displayOrder])
+  @@map("main_nav_group")
+}
+
+model MainNavItem {
+  id           String       @id @default(cuid())
+  groupId      String
+  name         String
+  href         String
+  isExternal   Boolean      @default(false)
+  isDisabled   Boolean      @default(false)
+  displayOrder Int
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  group        MainNavGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, displayOrder])
+  @@map("main_nav_item")
+}
+
+model FooterUsefulLink {
+  id           String   @id @default(cuid())
+  name         String
+  href         String?
+  isExternal   Boolean  @default(false)
+  isDisabled   Boolean  @default(false)
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("footer_useful_link")
+}
+
+model FooterGetInTouchLink {
+  id           String   @id @default(cuid())
+  name         String
+  href         String?
+  isExternal   Boolean  @default(false)
+  isDisabled   Boolean  @default(false)
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("footer_get_in_touch_link")
+}
+
+model FooterQuickLink {
+  id           String   @id @default(cuid())
+  name         String
+  href         String?
+  isExternal   Boolean  @default(false)
+  isDisabled   Boolean  @default(false)
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("footer_quick_link")
+}
+
+model FooterLegalLink {
+  // Bottom-bar row (Privacy Statement, Terms of Use, Sitemap).
+  // Flagged Phase 2/3 candidate in CP1.2 trade-offs; folded into
+  // the Phase 3 full chrome sweep.
+  id           String   @id @default(cuid())
+  name         String
+  href         String?
+  isExternal   Boolean  @default(false)
+  isDisabled   Boolean  @default(false)
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("footer_legal_link")
+}
+
+// Footer "Campuses" column. Decoupled from CampusLocation so the
+// chair can curate the footer link list independently of the
+// contact-page cards (different label, different ordering, or even
+// extra/missing campuses). Same shape as the other four footer link
+// tables so it reuses LinkListSection unchanged.
+model FooterCampusLink {
+  id           String   @id @default(cuid())
+  name         String
+  href         String?
+  isExternal   Boolean  @default(true)
+  isDisabled   Boolean  @default(false)
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("footer_campus_link")
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ABOUT PAGES  (Phase 4)
+//    Three singleton models — one per editable About page.
+//    Lab pages (/about/lab-facility, /about/laboratory-facility)
+//    are multi-row and deferred to Phase 5 in their entirety
+//    (landing singletons + Lab list tables together).
+// ════════════════════════════════════════════════════════════════
+
+model AboutOverview {
+  id                       String   @id @default("singleton")
+  // Hero (PageShell)
+  heroTitle                String
+  heroSubtitle             String?
+  heroOverline             String?
+  heroImageUrl             String
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int      @default(50)
+  // Body — variable-length list of paragraph bodies (HTML allowed)
+  paragraphs        String[]
+  updatedAt         DateTime @updatedAt
+
+  @@map("about_overview")
+}
+
+model AboutMissionVision {
+  id                       String   @id @default("singleton")
+  // Hero
+  heroTitle                String
+  heroOverline             String?
+  heroImageUrl             String
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int      @default(50)
+  // Mission card
+  missionOverline   String?
+  missionHeading    String
+  missionBody       String   @db.Text
+  // Vision card
+  visionOverline    String?
+  visionHeading     String
+  visionBody        String   @db.Text
+  updatedAt         DateTime @updatedAt
+
+  @@map("about_mission_vision")
+}
+
+model AboutEeeClub {
+  id                       String   @id @default("singleton")
+  // Hero
+  heroTitle                String
+  heroOverline             String?
+  heroImageUrl             String
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int      @default(50)
+  // Intro section
+  introOverline            String?
+  // introHeading allows inline HTML (e.g. <span class="text-gradient">)
+  // — rendered via dangerouslySetInnerHTML on the public side (J1
+  // pattern from Phase 2 messageParagraphs). Author trust is the
+  // operational control while audience is the chair.
+  introHeading             String
+  introBody1               String   @db.Text
+  introBody2               String   @db.Text
+  introImageUrl            String
+  introImagePublicId       String?
+  // Stats — variable-length [{ value, label }]
+  stats                    Json
+  // Activities section
+  activitiesOverline       String?
+  activitiesHeading        String
+  // Activities — variable-length [{ iconName, imageUrl, imagePublicId?, category, title, description }]
+  // iconName resolved against a curated Lucide IconMap at render
+  // time (same pattern as Phase 3 QuickAccessItem.iconName).
+  activities               Json
+  // Network section + 2 CTAs
+  networkOverline          String?
+  networkHeading           String
+  networkBody              String   @db.Text
+  networkPrimaryCtaLabel   String
+  networkPrimaryCtaHref    String
+  networkSecondaryCtaLabel String?
+  networkSecondaryCtaHref  String?
+  updatedAt                DateTime @updatedAt
+
+  @@map("about_eee_club")
+}
+
+model DepartmentLayout {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  shortTitle    String
+  coverUrl      String
+  coverPublicId String?
+  pdfUrl        String?
+  pdfPublicId   String?
+  pdfFileName   String?
+  displayOrder  Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("department_layout")
+}
+
+// ════════════════════════════════════════════════════════════════
+//  LAB SYSTEMS  (Phase 5)
+//    Two parallel multi-row systems — intentional separation, not
+//    duplication. /about/lab-facility is slug-based detail UX;
+//    /about/laboratory-facility is grid-of-cards. Confirmed by
+//    chair as distinct content concepts.
+// ════════════════════════════════════════════════════════════════
+
+// ─── System 1 — /about/lab-facility (slug-based detail) ───────
+
+model LabFacilityLanding {
+  id                       String   @id @default("singleton")
+  // Hero (PageShell)
+  heroTitle                String              // "Lab Facilities"
+  heroOverline             String?             // "About"
+  heroImageUrl             String
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int      @default(50)  // 0 = top, 100 = bottom
+  // Intro paragraph (HTML allowed, same convention as Phase 4 AboutOverview)
+  introBody         String   @db.Text
+  updatedAt         DateTime @updatedAt
+
+  @@map("lab_facility_landing")
+}
+
+model Lab {
+  id                String   @id @default(cuid())
+  slug              String   @unique   // URL-hash deep link target
+  name              String
+  tagline           String   @db.Text
+  description       String   @db.Text
+  heroImageUrl      String?
+  heroImagePublicId String?
+  // Gallery — paired arrays. gallery[i] is the URL, galleryPublicIds[i]
+  // is the Cloudinary public_id for cleanup. Same length, or both
+  // empty when no gallery is set. Seed populates gallery from
+  // labs-data.ts URLs and leaves galleryPublicIds empty (local
+  // /assets/ paths have no Cloudinary id).
+  gallery           String[]
+  galleryPublicIds  String[]
+  displayOrder      Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("lab")
+}
+
+// ─── System 2 — /about/laboratory-facility (grid + features) ──
+
+model LaboratoryFacilityLanding {
+  id                       String   @id @default("singleton")
+  // Hero
+  heroTitle                String              // "Laboratory Facility"
+  heroOverline             String?             // "About"
+  heroImageUrl             String
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int      @default(50)
+  // Intro
+  introBody         String   @db.Text
+  // "Why Our Labs Matter" — features section on the landing
+  featuresOverline  String?             // "What Sets Us Apart"
+  featuresHeading   String              // "Why Our Labs Matter"
+  // features — [{ iconName, title, description }] variable list
+  // Same Json shape pattern as Phase 4 AboutEeeClub.activities;
+  // iconName resolved against IconMap at render time with
+  // FlaskConical fallback.
+  features          Json
+  updatedAt         DateTime @updatedAt
+
+  @@map("laboratory_facility_landing")
+}
+
+model LaboratoryLab {
+  id           String   @id @default(cuid())
+  iconName     String                // Lucide name ("Flame", "Droplets", …)
+  title        String
+  description  String   @db.Text
+  keyLabel     String                // "Key Equipment" / "Key Software" / "Key Processes"
+  // keyItems — single comma-separated sentence, rendered as one
+  // <p>. Discovery #2 surfaced that the current data is plain
+  // String, not String[], so the column matches the render shape.
+  keyItems     String   @db.Text
+  focus        String   @db.Text
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("laboratory_lab")
+}
+
+// ════════════════════════════════════════════════════════════════
+//  Phase 6 — Content hubs (News, Events, Notices, Gallery)
+//    Four multi-row entities driving the ongoing-content surfaces:
+//      /news + /news/[slug]
+//      /student-society/events + /[slug]
+//      /student-society/notice-board (list only; file is the artifact)
+//      /gallery (lightbox-on-list, flat — no albums per Decision A)
+//    Homepage cross-refs: NewsSection (5), EventsSection (3),
+//    NoticesSection (5). Gallery has no homepage section.
+// ════════════════════════════════════════════════════════════════
+
+// Hero/intro singleton for the public /news listing page. Mirrors
+// the LabFacilityLanding shape — minimal copy (hero + intro)
+// because the page body is the auto-paginated news grid.
+model NewsLanding {
+  id                       String   @id @default("singleton")
+  heroTitle                String
+  heroSubtitle             String?
+  heroOverline             String?
+  heroImageUrl             String
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int      @default(50)
+  introBody                String?  @db.Text
+  updatedAt                DateTime @updatedAt
+
+  @@map("news_landing")
+}
+
+model News {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  shortTitle    String
+  // category — Academic | Achievement | Event | Workshop | Seminar | Industrial Visit
+  // Validated via Zod against the closed set; stored as String for forward
+  // flexibility (matches Phase 2 Faculty designation pattern).
+  category      String
+  // publishedAt — structured date used for sort + auto-formatted display
+  // when displayDate is null. Required so list ordering is deterministic.
+  publishedAt   DateTime
+  // displayDate — admin override (e.g. "2024" when only the year is known
+  // or admin wants a custom format). Null = derive from publishedAt.
+  displayDate   String?
+  summary       String   @db.Text
+  coverUrl      String
+  coverPublicId String?
+  // body — Json string[]: paragraph array. Same shape as the legacy
+  // news-data.ts. Reuses the Phase 2 Faculty paragraph editor.
+  body          Json
+  // meta — Json [{label,value}]: optional extra rows (Participants /
+  // Location / Period / Organising Partner …). Defaults to empty array.
+  meta          Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@map("news")
+}
+
+model Event {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  shortTitle    String
+  // category — Sports | Industrial Visit | Achievement | Partnership | Seminar | Exhibition
+  category      String
+  // status — Past | Current | Upcoming. Admin sets manually (no auto-derive
+  // from eventDate). Matches the existing render which has events with
+  // null dates marked Current.
+  status        String
+  // eventDate — nullable; some events have no fixed date (e.g. "current
+  // partnerships"). Sort ordering: eventDate DESC NULLS LAST, createdAt DESC.
+  eventDate     DateTime?
+  // displayDate — admin override (e.g. "20 Apr", "2024"). Null = derive
+  // from eventDate, both null = hide the date pill.
+  displayDate   String?
+  time          String?
+  venue         String?
+  imageUrl      String
+  imagePublicId String?
+  summary       String    @db.Text
+  // description — Json string[]: paragraphs for the detail page.
+  description   Json
+  focus         String    @db.Text
+  // details — Json [{label,value}]: optional "Chief Guest / Chairperson /
+  // Date / Venue" sidebar rows. Defaults to empty array.
+  details       Json
+  ctaLabel      String?
+  ctaHref       String?
+  ctaExternal   Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([eventDate])
+  @@index([status])
+  @@map("event")
+}
+
+model Notice {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  // category — Academic | Holiday | Transport
+  category     String
+  department   String                  // e.g. "Office of the Registrar"
+  publishedAt  DateTime
+  displayDate  String?
+  description  String   @db.Text
+  // File attachment — nullable so admin can save metadata-only initially.
+  // Upload flow: Cloudinary auto/upload accepts both image (jpg/png/webp)
+  // and PDF; fileType is set from the response resource_type or extension
+  // so the public renderer can show the right icon (Image vs FileText).
+  fileUrl      String?
+  filePublicId String?
+  fileType     String?                 // 'image' | 'pdf'
+  fileName     String?                 // original filename for the <a download> attribute
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@map("notice")
+}
+
+model GalleryImage {
+  id            String   @id @default(cuid())
+  imageUrl      String
+  imagePublicId String?
+  alt           String
+  // width/height — required for the masonry grid's aspect-ratio
+  // calculation (matches the legacy gallery-data.ts dimensions array).
+  width         Int
+  height        Int
+  displayOrder  Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("gallery_image")
+}
+
+// ════════════════════════════════════════════════════════════════
+//  Phase 7 — Student Society + Transport (final CMS migration)
+//    7 multi-row entities + 1 singleton, all replacing the last
+//    file-based reads from src/lib/*-data.ts.
+//    After Phase 7, every visible public surface is DB-driven
+//    (only /admission/* singletons remain hardcoded for Phase 8).
+// ════════════════════════════════════════════════════════════════
+
+model Alumni {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  studentId     String
+  name          String
+  department    String
+  designation   String
+  company       String
+  photoUrl      String?
+  photoPublicId String?
+  displayOrder  Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("alumni")
+}
+
+model Club {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  abbreviation  String
+  description   String   @db.Text
+  imageUrl      String
+  imagePublicId String?
+  displayOrder  Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("club")
+}
+
+model Faq {
+  id           String   @id @default(cuid())
+  // category — Admission | Rankings | Campus | Programs | Exams.
+  // Validated via Zod against the closed set; stored as String for
+  // forward flexibility (matches Phase 2 / Phase 6 enum-as-string).
+  category     String
+  question     String   @db.Text
+  answer       String   @db.Text
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@index([category])
+  @@map("faq")
+}
+
+model Visitor {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  role          String?
+  affiliation   String?
+  photoUrl      String
+  photoPublicId String?
+  // quote — Json string[] paragraphs (reuses Phase 2 ParagraphsEditor
+  // and Phase 6 coerceParagraphs read defence). Single-paragraph rows
+  // store as `[string]`, multi-paragraph as `[string, string, …]`.
+  quote         Json
+  displayOrder  Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("visitor")
+}
+
+model ResearchPaper {
+  id              String   @id @default(cuid())
+  title           String   @db.Text
+  authors         String   @db.Text
+  area            String   @db.Text
+  // date — free-form string. Source data has inconsistent formats:
+  // "14 August 2019", "January–February 2023", "2023", "" (empty).
+  // No DateTime parse; publicationYear below is the optional
+  // structured sort key.
+  date            String?
+  publicationYear Int?
+  links           Json     @default("[]")
+  displayOrder    Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@index([publicationYear])
+  @@map("research_paper")
+}
+
+model BusRoute {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  routeName      String                       // "Technical → SU"
+  busNumber      String
+  contact        String
+  // String[] paired arrays; admin form serializes via JSON-encoded
+  // hidden input (same pattern as Phase 5 GalleryEditor).
+  departureTimes String[]
+  returnTimes    String[]
+  displayOrder   Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("bus_route")
+}
+
+model Syllabus {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  shortTitle    String
+  department    String
+  // level — 'Undergraduate' | 'Postgraduate'. Zod-validated.
+  level         String
+  coverUrl      String
+  coverPublicId String?
+  // PDF attachment — nullable so admin can save metadata-only first.
+  // Cloudinary raw resource type via accept='application/pdf'
+  // (reuses Phase 6 ImageUploader extension).
+  pdfUrl        String?
+  pdfPublicId   String?
+  pdfFileName   String?
+  summary       String   @db.Text
+  displayOrder  Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("syllabus")
+}
+
+// Singleton — the chrome around the BusRoute grid on /transport-service.
+// introBody + bannerHeading/bannerBody + instructions are the three
+// hardcoded blocks the page wraps around the data-driven grid.
+model TransportLanding {
+  id            String   @id @default("singleton")
+  introBody     String   @db.Text
+  bannerHeading String
+  bannerBody    String   @db.Text
+  // instructions Json: [{iconName, title, body}] — 3 rows
+  // (MapPin / Sparkles / Bus icons in current render). Reuses the
+  // Phase 5 LaboratoryFacility "features" Json shape.
+  instructions  Json
+  updatedAt     DateTime @updatedAt
+
+  @@map("transport_landing")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Phase 8a — Admission CMS Part 1 (Notices + Prospectus)
+// ─────────────────────────────────────────────────────────────────
+
+// Formal Registrar letterhead documents. Multi-row;
+// /admission/notice renders the latest isActive=true row ordered by
+// publishedAt DESC. No public archive route in Phase 8a (Decision
+// B1) — admin toggles isActive to swap the visible notice.
+model AdmissionNotice {
+  id                    String   @id @default(cuid())
+  slug                  String   @unique
+  title                 String
+  refNo                 String
+  subject               String
+  publishedAt           DateTime
+  displayDate           String?
+
+  headerOverline        String   @default("Office of the Registrar")
+
+  // Json string[] of HTML-safe paragraphs (inline <strong>/<em>
+  // allowed via dangerouslySetInnerHTML, author-trust caveat from
+  // Phase 7 TransportLanding pattern).
+  bodyParagraphs        Json
+
+  signatoryPreamble     String?
+  signatoryName         String
+  signatoryDesignation  String
+
+  ccLabel               String   @default("Copy for Kind Information (not according to seniority)")
+  ccList                Json
+
+  heroImageUrl          String?
+  heroImagePublicId     String?
+
+  fileUrl               String?
+  filePublicId          String?
+  fileName              String?
+
+  isActive              Boolean  @default(true)
+  displayOrder          Int
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@index([isActive, publishedAt])
+  @@map("admission_notice")
+}
+
+// One row per program prospectus PDF. Mirrors Phase 7 Syllabus
+// shape 1:1 — separate tables (Decision D) because a program may
+// have both a syllabus and a prospectus, so a shared slug would
+// collide. /admission/prospectus surfaces all rows with a UG/PG
+// filter (client-side, same as the original hardcoded page).
+model ProspectusEntry {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  shortTitle    String
+  department    String
+  // level — 'Undergraduate' | 'Postgraduate'. Zod-validated.
+  level         String
+  coverUrl      String
+  coverPublicId String?
+  pdfUrl        String?
+  pdfPublicId   String?
+  pdfFileName   String?
+  displayOrder  Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@index([level])
+  @@map("prospectus_entry")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Phase 8b — Admission CMS Part 2 (Requirements + Tuition Fees)
+// ─────────────────────────────────────────────────────────────────
+
+// Singleton — university-wide admission policy. Discovery showed
+// /admission/requirements has NO per-program differentiation, so
+// this is deliberately NOT linked to Program. If per-program overlay
+// emerges later (e.g., MSc needs GRE), add a ProgramRequirement
+// child table — additive.
+model AdmissionRequirements {
+  id                         String   @id @default("singleton")
+  intro                      String   @db.Text
+
+  undergraduateRequirements  Json     // string[]
+  additionalNotes            Json     // string[]
+
+  diplomaRequirements        Json     // string[]
+  combinedGpaBody            String   @db.Text   // HTML-allowed (inline <strong>)
+  diplomaQuickCriteria       Json     // [{label, value}]
+
+  updatedAt                  DateTime @updatedAt
+
+  @@map("admission_requirements")
+}
+
+// One row per Program. Json columns hold the deeply nested overview/
+// shifts/policies trees. Phase 8c relaxed the original "no new
+// components" reading of constraint #4 — admin form for these Json
+// columns ships structured editors (OverviewStatsEditor,
+// ShiftsEditor, PoliciesEditor) since no existing editor fits the
+// shape (see PR #10). Zod validates shape on submit. onDelete:
+// Cascade so deleting a Program tears down its fee structure
+// cleanly. Future 1:N escape: drop @unique on programId, add
+// intakeYear field.
+model ProgramFeeStructure {
+  id              String   @id @default(cuid())
+  programId       String   @unique
+  program         Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  introOverline   String                  // e.g., "B.Sc. in Electrical and Electronics Engineering (EEE)"
+  introHeading    String   @default("Tuition Fee Structure")
+  introBody       String   @db.Text
+
+  // [{iconName, label, value}] — 4 cards (Total Credits, etc.)
+  overviewStats   Json
+  // [{iconName, name, shiftLabel, description,
+  //   groups: [{background, tiers: [{gpa, perCredit, total}]}]}]
+  // 3-level nesting; admin paste/edit as JSON.
+  shifts          Json
+  // [{iconName, title, text}] — 3 policy cards
+  policies        Json
+
+  displayOrder    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("program_fee_structure")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Phase 8c — Admission CMS Part 3 (Transfer Credits + Waiver/Scholarship)
+//  Final mini-phase of the 3-part Admission CMS series. After this
+//  migration, all 6 /admission/* pages are DB-driven and every
+//  visible user-facing surface on the public site is admin-editable.
+// ─────────────────────────────────────────────────────────────────
+
+// Singleton — universal credit transfer policy (no per-program
+// differentiation). Two stat cards (max limit + transfer fee) are
+// stored as 6 flat columns rather than a Json array because the
+// page architecture is structurally fixed at exactly two cards;
+// flat columns are clearer admin UX than a Json the admin would
+// have to extend.
+model AdmissionTransferCredits {
+  id                  String   @id @default("singleton")
+  intro               String   @db.Text
+
+  // {heading, body}[] — body has HTML allowed (inline <strong>)
+  minimumGradeBullets Json
+
+  limitMaxLabel       String   @default("Maximum Transfer Limit")
+  limitMaxValue       String
+  limitMaxSubtitle    String
+  limitFeeLabel       String   @default("Credit Transfer Fee")
+  limitFeeValue       String
+  limitFeeSubtitle    String
+
+  documentsIntroText  String   @db.Text
+  documents           Json     // [{title, description}]
+
+  summaryKicker       String   @default("Quick Reference")
+  summaryHeading      String   @default("Summary of Key Constraints")
+  summaryRows         Json     // [{label, value}]
+
+  updatedAt           DateTime @updatedAt
+
+  @@map("admission_transfer_credits")
+}
+
+// Singleton — chrome around the WaiverCategory + Scholarship
+// multi-row content on /admission/waiver-scholarship.
+model WaiverScholarshipLanding {
+  id                 String   @id @default("singleton")
+  intro              String   @db.Text
+
+  part1Kicker        String   @default("Part 01")
+  part1Heading       String   @default("Tuition Fee Waivers")
+
+  summaryHeading     String   @default("Summary Table")
+  summarySubheading  String   @default("Quick reference for all waiver categories.")
+  summaryRows        Json                          // [{category, max, status}]
+  summaryFooterNote  String   @db.Text
+
+  part2Kicker        String   @default("Part 02")
+  part2Heading       String   @default("Merit Scholarships")
+  part2Intro         String   @db.Text
+
+  keyTakeawaysKicker String   @default("Key Takeaways")
+  keyTakeaways       Json                          // string[]
+
+  updatedAt          DateTime @updatedAt
+
+  @@map("waiver_scholarship_landing")
+}
+
+// Multi-row — waiver category cards on Part 01. Each row has 3-5
+// inline items as {heading, text}[] Json; optional note callout
+// at the bottom of the card (only "Staff & Dependent" uses it in
+// seeded data). Drag-reorderable.
+model WaiverCategory {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  iconName     String                              // Lucide name
+  title        String
+  items        Json                                // [{heading, text}]
+  note         String?  @db.Text
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("waiver_category")
+}
+
+// Multi-row — merit scholarship slab cards on Part 02. Flat
+// columns (no nested Json). isHighlight=true gets the "Best Value"
+// ribbon + primary-bg theme on the public card.
+model Scholarship {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String                              // "Slab 1"
+  credits      String                              // "10 Credits or Fewer"
+  base         String                              // "2%" / "Highest"
+  perfect      String                              // GPA 4.00 percentage
+  near         String                              // GPA 3.90–3.99 percentage
+  isHighlight  Boolean  @default(false)
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("scholarship")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Phase 9 — Contact form backend (Path B: email + DB log)
+//    First demand-driven phase post-CMS-complete. ContactSubmission
+//    is the persistent audit log. Email recipient lives on the
+//    UniversityIdentity singleton (contactSubmissionEmail). When
+//    that field is null the submission still stores; the email
+//    dispatch is gracefully skipped and emailSentAt stays null.
+//    status flow: 'new' → 'read' → 'archived'. Hard-delete on
+//    explicit admin action (GDPR-friendly posture for personal data).
+// ─────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────
+//  Phase 10 — Contact page content + Campus Locations
+//    Closes out the last hardcoded-content gap from Phase 8c
+//    declaration. Contact form backend was Phase 9; this is the
+//    page chrome + 4 quick-contact cards + 3 campus location cards.
+// ─────────────────────────────────────────────────────────────────
+
+model ContactPageContent {
+  id                  String   @id @default("singleton")
+
+  // Hero (PageShell)
+  heroTitle                String              // "Contact Us"
+  heroOverline             String?             // "Get in Touch"
+  heroImageUrl             String
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int      @default(50)
+
+  // Intro paragraph (HTML allowed, single block — page only has one)
+  introBody           String   @db.Text
+
+  // Section headings (defaults match the original hardcoded copy)
+  quickContactHeading String   @default("Quick Contact Information")
+  formHeading         String   @default("Send Us a Message")
+  formSubheading      String   @db.Text   // "Have a question or suggestion?..."
+  campusesHeading     String   @default("Campus Locations")
+
+  // Form-side response-time hint (rendered above the submit button)
+  responseTimeNote    String              // "We typically respond within 1-2 business days."
+
+  // quickContactCards — Json [{ iconName, title, primaryValue,
+  //   primaryHref?, secondaryValue?, secondaryHref?, hint? }]
+  // 4 cards in seeded data (Phone / Email / Website / Facebook).
+  // iconName resolved against a curated Lucide IconMap on the public
+  // side with a sensible fallback (same pattern as Phase 7
+  // TransportLanding.instructions). Editable via a Json textarea
+  // in the admin form — chair Decision (Phase 10 mini): no new
+  // structured editor for low-churn content.
+  quickContactCards   Json
+
+  updatedAt           DateTime @updatedAt
+
+  @@map("contact_page_content")
+}
+
+// Multi-row — campus location cards on /contact. 3 rows seeded
+// (Permanent / Green Road / Mohakhali). tag + phone are optional
+// (Permanent Campus has neither in the seed source). Drag-reorderable.
+model CampusLocation {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String                              // "Permanent Campus"
+  tag          String?                             // "City Campus-1"
+  address      String   @db.Text
+  phone        String?
+  email        String
+  // Optional Google Maps URL (e.g. maps.app.goo.gl/... share link) for
+  // the campus pin. Footer + contact page prefer this when present;
+  // they fall back to an address-based maps.google.com/?q= search.
+  mapsUrl      String?
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("campus_location")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Phase 12 — JourneyCTASection content (between content + footer)
+//    Closes the last layout-level chrome gap missed by the Phase 10
+//    page-only audit. Hero image + heading + body + 2 CTA buttons,
+//    all DB-driven; seed mirrors the prior hardcoded values so first
+//    deploy is pixel-identical (admin can edit afterward).
+// ─────────────────────────────────────────────────────────────────
+
+model JourneyCTAContent {
+  id                   String   @id @default("singleton")
+
+  // Hero background image (Cloudinary-paired). Vertical percent is
+  // 0 = top edge visible, 100 = bottom edge visible; renderer emits
+  // `center {N}%` as the CSS object-position value. Phase 13
+  // standardized from String to Int across all hero-bearing entities.
+  heroImageUrl             String
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int      @default(50)
+
+  // Display copy. body is HTML-allowed (inline <strong>/<em>) under
+  // the Phase 4 J1 author-trusted pattern.
+  heading              String
+  body                 String   @db.Text
+
+  // Two CTAs (MainNavItem pattern — label + href + isExternal).
+  primaryCtaLabel      String
+  primaryCtaHref       String
+  primaryCtaExternal   Boolean  @default(true)
+
+  secondaryCtaLabel    String
+  secondaryCtaHref     String
+  secondaryCtaExternal Boolean  @default(false)
+
+  updatedAt            DateTime @updatedAt
+
+  @@map("journey_cta_content")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Phase 17 — Legal pages (Privacy Policy + Terms & Conditions)
+//    Single combined singleton so both pages share one admin form +
+//    one migration. Two public routes (/privacy-policy and
+//    /terms-and-conditions) read this row and pick their own half.
+//    body fields store HTML (inline + headings + lists allowed)
+//    rendered via dangerouslySetInnerHTML with a .legal-body CSS
+//    scope — Phase 4 J1 author-trust pattern, audience is the chair.
+// ─────────────────────────────────────────────────────────────────
+
+model LegalPagesContent {
+  id                              String   @id @default("singleton")
+
+  // Privacy Policy (PageShell hero + structured sections)
+  privacyHeroTitle                String   @default("Privacy Policy")
+  privacyHeroOverline             String?  @default("Legal")
+  privacyHeroImageUrl             String
+  privacyHeroImagePublicId        String?
+  privacyHeroImageVerticalPercent Int      @default(50)
+  // sections — Json [{ heading?: string | null, paragraphs: string[] }]
+  // Each section is an optional heading + flat paragraph list. Admin
+  // edits via SectionsEditor (no raw HTML markup); inline emphasis
+  // characters are escaped, so the chair only writes prose.
+  privacySections                 Json
+
+  // Terms & Conditions (PageShell hero + structured sections)
+  termsHeroTitle                  String   @default("Terms & Conditions")
+  termsHeroOverline               String?  @default("Legal")
+  termsHeroImageUrl               String
+  termsHeroImagePublicId          String?
+  termsHeroImageVerticalPercent   Int      @default(50)
+  termsSections                   Json
+
+  updatedAt                       DateTime @updatedAt
+
+  @@map("legal_pages_content")
+}
+
+model ContactSubmission {
+  id            String   @id @default(cuid())
+  name          String
+  email         String
+  phone         String?
+  subject       String?
+  message       String   @db.Text
+  // status — 'new' | 'read' | 'archived'. Zod-validated against the
+  // closed set; stored as String for forward flexibility (same
+  // pattern as Phase 6 News.category).
+  status        String   @default("new")
+  submittedAt   DateTime @default(now())
+  // ipAddress — first hop from x-forwarded-for (Vercel sets this);
+  // userAgent — raw header. Both nullable: behind a misconfigured
+  // proxy or curl without UA, they may be missing.
+  ipAddress     String?
+  userAgent     String?  @db.Text
+  // emailSentAt — null = email skipped (no recipient configured)
+  // OR email failed (see emailError). emailError populated only on
+  // Resend SDK error; null on success or skipped-no-recipient.
+  emailSentAt   DateTime?
+  emailError    String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status, submittedAt])
+  @@index([submittedAt])
+  @@map("contact_submission")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Newsletter page + subscribers
+//    Singleton CMS for the public /newsletter landing (hero, intro,
+//    advantages list, form labels) + a subscribers table populated
+//    by the public form submit. Subscribers are stored DB-only —
+//    chair queries / exports via /admin/newsletter-subscribers.
+// ─────────────────────────────────────────────────────────────────
+
+model NewsletterPage {
+  id                       String   @id @default("singleton")
+  // Hero (PageShell)
+  heroTitle                String
+  heroSubtitle             String?
+  heroOverline             String?
+  heroImageUrl             String
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int      @default(50)
+  // Intro paragraph above the advantages grid (HTML allowed,
+  // sanitized at render time — same J1 pattern as AboutOverview).
+  introBody                String   @db.Text
+  // Advantages section
+  advantagesOverline       String?
+  advantagesHeading        String
+  // advantages — Json [{ iconName, title, description }]. iconName
+  // resolves through DynamicLucideIcon (Phase 20). Variable length;
+  // admin manages via a structured editor.
+  advantages               Json
+  // Subscribe form
+  ctaHeading               String
+  ctaBody                  String?
+  ctaButtonLabel           String   // "Subscribe"
+  emailPlaceholder         String   // "you@example.com"
+  // Optional note under the form (e.g. privacy reassurance).
+  privacyNote              String?
+  updatedAt                DateTime @updatedAt
+
+  @@map("newsletter_page")
+}
+
+// Generic per-page hero CMS. Each public page that doesn't already
+// own a singleton with hero fields (AboutOverview, AboutEeeClub,
+// LegalPage, NewsLanding, ContactPageContent, NewsletterPage, etc.)
+// gets a row keyed by `pageKey` — that way the chair can change the
+// hero image + copy independently per page without N singleton
+// tables. Admin reads/writes via /admin/page-heroes.
+model PageHero {
+  id                       String   @id @default(cuid())
+  pageKey                  String   @unique
+  // Human-readable label shown to admin (e.g. "Faculty Members List").
+  pageLabel                String
+  // Public route this hero powers, so the admin edit form can link
+  // out to "View page" (e.g. "/faculty-member", "/admission/notice").
+  publicPath               String
+  heroTitle                String
+  heroSubtitle             String?
+  heroOverline             String?
+  heroImageUrl             String
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int      @default(50)
+  updatedAt                DateTime @updatedAt
+
+  @@map("page_hero")
+}
+
+// SUEEC join applications — populated by the public popup form
+// on /about/eee-club. Admin reviews + approves/rejects via
+// /admin/eee-club-applications.
+model EeeClubApplication {
+  id          String   @id @default(cuid())
+  fullName    String
+  studentId   String                     // SU ID (e.g. SU1603141114)
+  email       String
+  phone       String
+  semester    String                     // '1'..'8' (stored String for forward flex)
+  motivation  String   @db.Text
+  // status — 'pending' | 'approved' | 'rejected'. Zod-validated;
+  // String for forward flexibility (same as ContactSubmission.status).
+  status      String   @default("pending")
+  // Forensics — same shape as ContactSubmission / NewsletterSubscriber.
+  ipAddress   String?
+  userAgent   String?  @db.Text
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, submittedAt])
+  @@index([submittedAt])
+  @@map("eee_club_application")
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  // status — 'active' | 'unsubscribed'. Future unsubscribe flow can
+  // flip this without losing history. Stored as String (forward-
+  // flexible, same as ContactSubmission.status).
+  status    String   @default("active")
+  // Where the submission came from. Currently only 'newsletter-page';
+  // future footer-form or popup signups can tag themselves separately.
+  source    String?
+  // Forensics — first hop from x-forwarded-for / raw UA header.
+  // Same nullable shape as ContactSubmission so the same redaction
+  // helpers apply.
+  ipAddress String?
+  userAgent String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@map("newsletter_subscriber")
+}

@@ -1,0 +1,30 @@
+# Normalize line endings across Windows + macOS + Linux contributors.
+# Without this, every checkout on a fresh Windows clone re-prints
+# "warning: LF will be replaced by CRLF" on every text-file add.
+#
+# Convention:
+#   `text=auto`    Git decides text vs binary; CRLF on Windows checkout,
+#                  LF on Linux/macOS checkout, LF in the repo.
+#   `eol=lf`       Forced LF on checkout — for files that tooling
+#                  reads from disk and breaks on CRLF (Prisma
+#                  migration_lock.toml, shell scripts).
+
+* text=auto
+
+# Force LF for files where CRLF breaks tooling
+*.sh                          text eol=lf
+*.toml                        text eol=lf
+prisma/migrations/**/*.sql    text eol=lf
+
+# Mark common binaries so Git doesn't try to diff/normalize them
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.webp     binary
+*.gif      binary
+*.ico      binary
+*.pdf      binary
+*.woff     binary
+*.woff2    binary
+*.ttf      binary
+*.otf      binary

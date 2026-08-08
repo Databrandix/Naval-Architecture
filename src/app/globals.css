@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-poppins), sans-serif;
+  --font-bangla: var(--font-hind-siliguri), sans-serif;
+
+  --color-primary: #2B3175;
+  --color-accent: #CC1579;
+  --color-secondary-orange: #E97E24;
+  --color-secondary-coral: #DF514E;
+  --color-secondary-red: #DC2428;
+  --color-secondary-dark: #1C1C1A;
+  --color-button-yellow: #F8BD23;
+
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+
+  --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  html {
+    overflow-x: clip;
+  }
+  body {
+    @apply font-sans antialiased text-secondary-dark bg-white;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold tracking-tight;
+  }
+}
+
+.gradient-blue-magenta {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  /* Phase 15 — Tier 3 page transition. Applied to a per-pathname
+     keyed wrapper around public route children in the root layout,
+     so each public navigation triggers a fresh 250ms opacity fade-in.
+     Admin children render outside this wrapper. */
+  @keyframes page-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .page-fade-in {
+    animation: page-fade-in 250ms ease-out;
+  }
+
+  /* Phase 17 — Legal pages (Privacy Policy, Terms & Conditions).
+     Bodies are HTML rendered via dangerouslySetInnerHTML inside a
+     .legal-body scope; this block styles the common tags so the
+     chair only has to write minimal markup (h2 / p / strong / a /
+     ul / li). */
+  .legal-body h2 {
+    @apply text-2xl md:text-3xl font-display font-bold text-primary mt-10 mb-4 first:mt-0;
+  }
+  .legal-body p {
+    @apply text-[15px] md:text-[16px] leading-[1.85] text-gray-700 mb-4;
+  }
+  .legal-body strong {
+    @apply font-semibold text-gray-900;
+  }
+  .legal-body em {
+    @apply italic;
+  }
+  .legal-body a {
+    @apply text-accent underline underline-offset-2 hover:text-primary transition-colors;
+  }
+  .legal-body ul {
+    @apply list-disc pl-6 mb-4 space-y-1.5;
+  }
+  .legal-body ol {
+    @apply list-decimal pl-6 mb-4 space-y-1.5;
+  }
+  .legal-body li {
+    @apply text-[15px] md:text-[16px] leading-[1.7] text-gray-700;
+  }
+
+  /* Phase 15 — BrandedLoader dot ellipsis. Classic 4-dot spinner
+     pattern: dot 1 grows in at the first slot, dots 2/3 slide
+     leftward one slot, dot 4 shrinks out at the last slot. Looped
+     seamlessly via cubic-bezier easing.
+     Geometry: container 80x16, dot 12x12, slot pitch 24px. */
+  @keyframes lds-ellipsis-grow   { 0% { transform: scale(0); }    100% { transform: scale(1); } }
+  @keyframes lds-ellipsis-shrink { 0% { transform: scale(1); }    100% { transform: scale(0); } }
+  @keyframes lds-ellipsis-slide  { 0% { transform: translateX(0); } 100% { transform: translateX(24px); } }
+  .ellipsis-grow   { animation: lds-ellipsis-grow   0.7s infinite cubic-bezier(0, 1, 1, 0); }
+  .ellipsis-shrink { animation: lds-ellipsis-shrink 0.7s infinite cubic-bezier(0, 1, 1, 0); }
+  .ellipsis-slide  { animation: lds-ellipsis-slide  0.7s infinite cubic-bezier(0, 1, 1, 0); }
+}
