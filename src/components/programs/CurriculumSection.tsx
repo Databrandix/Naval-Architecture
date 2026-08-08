@@ -51,15 +51,27 @@ function isSessional(course: Course): boolean {
   return /sessional|lab/i.test(`${course.remarks ?? ''} ${course.title}`);
 }
 
-function SemesterPanel({ semester, defaultOpen }: { semester: Semester; defaultOpen: boolean }) {
-  const [open, setOpen] = useState(defaultOpen);
+/**
+ * One semester at a time. The panel does not own its open state — the section
+ * does — because opening one has to close the others, and eight panels each
+ * holding their own boolean cannot know about each other.
+ */
+function SemesterPanel({
+  semester,
+  open,
+  onToggle,
+}: {
+  semester: Semester;
+  open: boolean;
+  onToggle: () => void;
+}) {
   const panelId = `semester-${semester.name.replace(/\s+/g, '-').toLowerCase()}`;
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
       <button
         type="button"
-        onClick={() => setOpen((wasOpen) => !wasOpen)}
+        onClick={onToggle}
         aria-expanded={open}
         aria-controls={panelId}
         className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-gray-50"
@@ -138,6 +150,10 @@ export default function CurriculumSection({
   pdfUrl: string | null;
   pdfFileName: string | null;
 }) {
+  /* Null closes everything: clicking the open semester should shut it, not
+     leave one stuck open with no way back. */
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
   if (semesters.length === 0 && creditRows.length === 0) return null;
 
   const totalCourses = semesters.reduce((n, s) => n + s.courses.length, 0);
@@ -154,7 +170,12 @@ export default function CurriculumSection({
 
       <div className="mx-auto flex max-w-6xl flex-col gap-3">
         {semesters.map((semester, index) => (
-          <SemesterPanel key={semester.name} semester={semester} defaultOpen={index === 0} />
+          <SemesterPanel
+            key={semester.name}
+            semester={semester}
+            open={openIndex === index}
+            onToggle={() => setOpenIndex((current) => (current === index ? null : index))}
+          />
         ))}
       </div>
 
