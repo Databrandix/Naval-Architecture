@@ -447,6 +447,16 @@ export const getProgramBySlug = cache(async (slug: string) => {
   });
 });
 
+/** Course structure and credit distribution for a program page. */
+export const getProgramCurriculumBySlug = cache(async (slug: string) => {
+  const program = await prisma.program.findFirst({
+    where: { degreeCode: { equals: slug, mode: 'insensitive' } },
+    select: { id: true },
+  });
+  if (!program) return null;
+  return prisma.programCurriculum.findUnique({ where: { programId: program.id } });
+});
+
 export const getProgramFeeStructureBySlug = cache(async (slug: string) => {
   const program = await prisma.program.findFirst({
     where: { degreeCode: { equals: slug, mode: 'insensitive' } },

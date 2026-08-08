@@ -8,8 +8,13 @@ import {
   getPageHero,
   getPrograms,
   getDepartmentIdentity,
+  getProgramCurriculumBySlug,
 } from '@/lib/identity';
 import { DynamicLucideIcon } from '@/components/ui/DynamicLucideIcon';
+import CurriculumSection, {
+  type CreditRow,
+  type Semester,
+} from '@/components/programs/CurriculumSection';
 
 /**
  * One page per program, addressed by its degree code lowercased
@@ -39,6 +44,52 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 type OverviewStat = { iconName: string; label: string; value: string };
 
+/* ProgramCurriculum.semesters and .creditRows are Json columns, so what comes
+   back is whatever was written to them. Both are coerced rather than cast: a
+   curriculum imported from a spreadsheet with a renamed column should drop a
+   field, not crash the page. */
+
+function asRecords(value: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((r): r is Record<string, unknown> => typeof r === 'object' && r !== null);
+}
+
+const asText = (v: unknown): string => (typeof v === 'string' ? v : '');
+const asNumber = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+const asOptionalText = (v: unknown): string | null => (typeof v === 'string' && v ? v : null);
+
+function coerceSemesters(value: unknown): Semester[] {
+  return asRecords(value)
+    .map((s) => ({
+      name: asText(s.name),
+      courses: asRecords(s.courses)
+        .map((c) => ({
+          code: asText(c.code),
+          title: asText(c.title),
+          type: asText(c.type),
+          credits: asNumber(c.credits),
+          prerequisite: asOptionalText(c.prerequisite),
+          remarks: asOptionalText(c.remarks),
+        }))
+        .filter((c) => c.code && c.title),
+    }))
+    .filter((s) => s.name && s.courses.length > 0);
+}
+
+function coerceCreditRows(value: unknown): CreditRow[] {
+  return asRecords(value)
+    .map((r) => ({
+      semester: asText(r.semester),
+      total: asNumber(r.total),
+      core: asNumber(r.core),
+      elective: asNumber(r.elective),
+      lab: asNumber(r.lab),
+      project: asNumber(r.project),
+      cumulative: asNumber(r.cumulative),
+    }))
+    .filter((r) => r.semester);
+}
+
 function coerceOverview(v: unknown): OverviewStat[] {
   if (!Array.isArray(v)) return [];
   return v
@@ -53,10 +104,12 @@ function coerceOverview(v: unknown): OverviewStat[] {
 
 export default async function ProgramPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [program, fee, hero] = await Promise.all([
+  const [program, fee, hero, curriculum, dept] = await Promise.all([
     getProgramBySlug(slug),
     getProgramFeeStructureBySlug(slug),
     getPageHero(`program-${slug}`),
+    getProgramCurriculumBySlug(slug),
+    getDepartmentIdentity(),
   ]);
 
   /* A 404 rather than a "not found" page body: an address that names a
@@ -140,6 +193,16 @@ export default async function ProgramPage({ params }: { params: Promise<{ slug: 
           </section>
         )}
 
+        {/* Course structure, credit distribution, and the same as a PDF */}
+        {curriculum && (
+          <CurriculumSection
+            semesters={coerceSemesters(curriculum.semesters)}
+            creditRows={coerceCreditRows(curriculum.creditRows)}
+            pdfUrl={curriculum.pdfUrl}
+            pdfFileName={curriculum.pdfFileName}
+          />
+        )}
+
         {/* Ready to Apply */}
         <section className="max-w-3xl mx-auto">
           <div className="bg-primary rounded-2xl shadow-2xl p-8 md:p-12 text-center">
@@ -147,7 +210,8 @@ export default async function ProgramPage({ params }: { params: Promise<{ slug: 
               Ready to Apply?
             </h2>
             <p className="text-white/80 mb-8 max-w-lg mx-auto text-[15px] leading-relaxed">
-              Take the next step toward your career in Electrical and Electronic Engineering. Review the admission requirements or explore the tuition fee structure.
+              Take the next step toward your career in {dept.name.replace(/^Department of\s+/i, '')}.
+              Review the admission requirements or explore the tuition fee structure.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a

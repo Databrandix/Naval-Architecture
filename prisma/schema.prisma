@@ -29,19 +29,19 @@ enum FacultyType {
 }
 
 model User {
-  id          String    @id @default(cuid())
-  email       String    @unique
-  name        String
+  id    String @id @default(cuid())
+  email String @unique
+  name  String
 
   role        Role      @default(admin)
   isActive    Boolean   @default(true)
   lastLoginAt DateTime?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  sessions    Session[]
-  accounts    Account[]
+  sessions Session[]
+  accounts Account[]
 
   @@index([role])
   @@map("user")
@@ -83,16 +83,16 @@ model Account {
 // ════════════════════════════════════════════════════════════════
 
 model DepartmentIdentity {
-  id                 String   @id @default("singleton")
-  name               String
-  shortCode          String
-  facultyName        String
-  primaryColor       String
-  accentColor        String
-  buttonColor        String
-  logoUrl            String
-  logoPublicId       String?
-  breadcrumbLabel    String
+  id                        String   @id @default("singleton")
+  name                      String
+  shortCode                 String
+  facultyName               String
+  primaryColor              String
+  accentColor               String
+  buttonColor               String
+  logoUrl                   String
+  logoPublicId              String?
+  breadcrumbLabel           String
   heroImage1Url             String
   heroImage1PublicId        String?
   heroImage1Alt             String?
@@ -139,7 +139,7 @@ model UniversityIdentity {
   // disabled (DB-only mode). Admin sets in /admin/university-identity.
   contactSubmissionEmail String?
 
-  updatedAt     DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("university_identity")
 }
@@ -149,12 +149,12 @@ model UniversityIdentity {
 // ════════════════════════════════════════════════════════════════
 
 model Program {
-  id              String   @id @default(cuid())
-  programName     String
-  degreeCode      String   @unique
-  duration        String
-  description     String   @db.Text
-  displayOrder    Int
+  id           String @id @default(cuid())
+  programName  String
+  degreeCode   String @unique
+  duration     String
+  description  String @db.Text
+  displayOrder Int
 
   imageUrl        String?
   imagePublicId   String?
@@ -165,22 +165,23 @@ model Program {
   // Phase 8b — back-relation for ProgramFeeStructure (1:1, optional).
   // Program admin form stays focused on academic metadata (per
   // constraint #12); fee structure lives at /admin/program-fee-structures.
-  feeStructure    ProgramFeeStructure?
+  feeStructure ProgramFeeStructure?
+  curriculum   ProgramCurriculum?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([displayOrder])
   @@map("program")
 }
 
 model ResearchArea {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   iconName     String?
   iconPublicId String?
   iconUrl      String?
   areaName     String
-  description  String?  @db.Text
+  description  String? @db.Text
   displayOrder Int
 
   // Featured slot — exactly one row should have isFeatured=true.
@@ -188,15 +189,15 @@ model ResearchArea {
   // featuredHeading is optional override for the card's <h3>; null →
   // renderer falls back to areaName (keeps grid + featured visually
   // in sync unless an editor intentionally wants a richer title).
-  isFeatured              Boolean @default(false)
-  featuredHeading         String?
-  featuredImageUrl        String?
-  featuredImagePublicId   String?
-  featuredDescription     String? @db.Text
-  featuredCtaHref         String?
+  isFeatured            Boolean @default(false)
+  featuredHeading       String?
+  featuredImageUrl      String?
+  featuredImagePublicId String?
+  featuredDescription   String? @db.Text
+  featuredCtaHref       String?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([displayOrder])
   @@index([isFeatured])
@@ -207,62 +208,62 @@ model ResearchArea {
 // and the Dean's-message / Head's-message about pages via
 // nullable message-extras columns on the same row.
 model Faculty {
-  id              String      @id @default(cuid())
-  slug            String      @unique
-  name            String
-  designation     String
-  secondaryTitle  String?
-  badge           String?
-  type            FacultyType
-  displayOrder    Int
+  id             String      @id @default(cuid())
+  slug           String      @unique
+  name           String
+  designation    String
+  secondaryTitle String?
+  badge          String?
+  type           FacultyType
+  displayOrder   Int
 
   // Photo (Cloudinary-paired, same convention as Program.imageUrl)
-  photoUrl        String?
-  photoPublicId   String?
+  photoUrl      String?
+  photoPublicId String?
 
   // Contact (all optional)
-  email           String?
-  phone           String?
-  suId            String?
+  email         String?
+  phone         String?
+  suId          String?
   // Per-faculty office address. Nullable: when null the public
   // faculty page falls back to UniversityIdentity.address (the
   // shared institutional address). Lets a member with a different
   // campus / off-site office override the default without forcing
   // every faculty row to re-enter the central address.
-  officeAddress   String?     @db.Text
+  officeAddress String? @db.Text
 
   // Variable-shape label/value list — `{label, value}[]`
-  personalInfo    Json?
+  personalInfo Json?
 
   // 8 detail sections — each can be:
   //   string | string[] | { heading: string; items: string[] }[]
   // Json is the only realistic storage for that union.
-  academicQualification  Json?
-  trainingExperience     Json?
-  teachingArea           Json?
-  publications           Json?
-  research               Json?
-  awards                 Json?
-  membership             Json?
-  previousEmployment     Json?
+  academicQualification Json?
+  trainingExperience    Json?
+  teachingArea          Json?
+  publications          Json?
+  research              Json?
+  awards                Json?
+  membership            Json?
+  previousEmployment    Json?
 
   // Dean / Head extras — flat nullable columns; only the 0–1 row(s)
   // flagged isDean / isHead populate these.
-  isDean                    Boolean   @default(false)
-  isHead                    Boolean   @default(false)
-  messageOverline           String?
-  messageHeading            String?
-  messageParagraphs         String[]
-  messagePhotoUrl           String?
-  messagePhotoPublicId      String?
-  messageTitleLine1         String?
-  messageTitleLine2         String?
-  messageHeroImageUrl              String?
-  messageHeroImagePublicId         String?
-  messageHeroImageVerticalPercent  Int     @default(50)
+  isDean                          Boolean  @default(false)
+  isHead                          Boolean  @default(false)
+  messageOverline                 String?
+  messageHeading                  String?
+  messageParagraphs               String[]
+  messagePhotoUrl                 String?
+  messagePhotoPublicId            String?
+  messageTitleLine1               String?
+  messageTitleLine2               String?
+  messageHeroImageUrl             String?
+  messageHeroImagePublicId        String?
+  messageHeroImageVerticalPercent Int      @default(50)
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([type, displayOrder])
   @@index([isDean])
@@ -282,7 +283,7 @@ model TopLink {
   // Career, Archive, Contact). Hidden on mobile; collapses on scroll.
   id           String   @id @default(cuid())
   name         String
-  href         String?  // null when isDisabled (e.g. "Virtual Tour", "Archive" have no destination yet)
+  href         String? // null when isDisabled (e.g. "Virtual Tour", "Archive" have no destination yet)
   isExternal   Boolean  @default(false)
   isDisabled   Boolean  @default(false)
   displayOrder Int
@@ -300,7 +301,7 @@ model QuickAccessItem {
   id           String   @id @default(cuid())
   name         String
   href         String?
-  iconName     String   // Lucide icon name (BookOpen, GraduationCap, …)
+  iconName     String // Lucide icon name (BookOpen, GraduationCap, …)
   isExternal   Boolean  @default(false)
   isDisabled   Boolean  @default(false)
   displayOrder Int
@@ -316,33 +317,33 @@ model MainNavGroup {
   // Student Society, Contact). `hasDropdown=false` → plain link
   // (href required, items empty). `hasDropdown=true` → dropdown
   // panel (href ignored, title + items drive the panel).
-  id           String        @id @default(cuid())
+  id           String   @id @default(cuid())
   name         String
   href         String?
-  hasDropdown  Boolean       @default(false)
-  title        String?       // dropdown header text (usually same as name)
+  hasDropdown  Boolean  @default(false)
+  title        String? // dropdown header text (usually same as name)
   displayOrder Int
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  items        MainNavItem[]
+  items MainNavItem[]
 
   @@index([displayOrder])
   @@map("main_nav_group")
 }
 
 model MainNavItem {
-  id           String       @id @default(cuid())
+  id           String   @id @default(cuid())
   groupId      String
   name         String
   href         String
-  isExternal   Boolean      @default(false)
-  isDisabled   Boolean      @default(false)
+  isExternal   Boolean  @default(false)
+  isDisabled   Boolean  @default(false)
   displayOrder Int
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  group        MainNavGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group MainNavGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@index([groupId, displayOrder])
   @@map("main_nav_item")
@@ -444,8 +445,8 @@ model AboutOverview {
   heroImagePublicId        String?
   heroImageVerticalPercent Int      @default(50)
   // Body — variable-length list of paragraph bodies (HTML allowed)
-  paragraphs        String[]
-  updatedAt         DateTime @updatedAt
+  paragraphs               String[]
+  updatedAt                DateTime @updatedAt
 
   @@map("about_overview")
 }
@@ -459,14 +460,14 @@ model AboutMissionVision {
   heroImagePublicId        String?
   heroImageVerticalPercent Int      @default(50)
   // Mission card
-  missionOverline   String?
-  missionHeading    String
-  missionBody       String   @db.Text
+  missionOverline          String?
+  missionHeading           String
+  missionBody              String   @db.Text
   // Vision card
-  visionOverline    String?
-  visionHeading     String
-  visionBody        String   @db.Text
-  updatedAt         DateTime @updatedAt
+  visionOverline           String?
+  visionHeading            String
+  visionBody               String   @db.Text
+  updatedAt                DateTime @updatedAt
 
   @@map("about_mission_vision")
 }
@@ -543,21 +544,21 @@ model DepartmentLayout {
 model LabFacilityLanding {
   id                       String   @id @default("singleton")
   // Hero (PageShell)
-  heroTitle                String              // "Lab Facilities"
-  heroOverline             String?             // "About"
+  heroTitle                String // "Lab Facilities"
+  heroOverline             String? // "About"
   heroImageUrl             String
   heroImagePublicId        String?
-  heroImageVerticalPercent Int      @default(50)  // 0 = top, 100 = bottom
+  heroImageVerticalPercent Int      @default(50) // 0 = top, 100 = bottom
   // Intro paragraph (HTML allowed, same convention as Phase 4 AboutOverview)
-  introBody         String   @db.Text
-  updatedAt         DateTime @updatedAt
+  introBody                String   @db.Text
+  updatedAt                DateTime @updatedAt
 
   @@map("lab_facility_landing")
 }
 
 model Lab {
   id                String   @id @default(cuid())
-  slug              String   @unique   // URL-hash deep link target
+  slug              String   @unique // URL-hash deep link target
   name              String
   tagline           String   @db.Text
   description       String   @db.Text
@@ -583,32 +584,32 @@ model Lab {
 model LaboratoryFacilityLanding {
   id                       String   @id @default("singleton")
   // Hero
-  heroTitle                String              // "Laboratory Facility"
-  heroOverline             String?             // "About"
+  heroTitle                String // "Laboratory Facility"
+  heroOverline             String? // "About"
   heroImageUrl             String
   heroImagePublicId        String?
   heroImageVerticalPercent Int      @default(50)
   // Intro
-  introBody         String   @db.Text
+  introBody                String   @db.Text
   // "Why Our Labs Matter" — features section on the landing
-  featuresOverline  String?             // "What Sets Us Apart"
-  featuresHeading   String              // "Why Our Labs Matter"
+  featuresOverline         String? // "What Sets Us Apart"
+  featuresHeading          String // "Why Our Labs Matter"
   // features — [{ iconName, title, description }] variable list
   // Same Json shape pattern as Phase 4 AboutDepartmentClub.activities;
   // iconName resolved against IconMap at render time with
   // FlaskConical fallback.
-  features          Json
-  updatedAt         DateTime @updatedAt
+  features                 Json
+  updatedAt                DateTime @updatedAt
 
   @@map("laboratory_facility_landing")
 }
 
 model LaboratoryLab {
   id           String   @id @default(cuid())
-  iconName     String                // Lucide name ("Flame", "Droplets", …)
+  iconName     String // Lucide name ("Flame", "Droplets", …)
   title        String
   description  String   @db.Text
-  keyLabel     String                // "Key Equipment" / "Key Software" / "Key Processes"
+  keyLabel     String // "Key Equipment" / "Key Software" / "Key Processes"
   // keyItems — single comma-separated sentence, rendered as one
   // <p>. Discovery #2 surfaced that the current data is plain
   // String, not String[], so the column matches the render shape.
@@ -726,7 +727,7 @@ model Notice {
   title        String
   // category — Academic | Holiday | Transport
   category     String
-  department   String                  // e.g. "Office of the Registrar"
+  department   String // e.g. "Office of the Registrar"
   publishedAt  DateTime
   displayDate  String?
   description  String   @db.Text
@@ -736,8 +737,8 @@ model Notice {
   // so the public renderer can show the right icon (Image vs FileText).
   fileUrl      String?
   filePublicId String?
-  fileType     String?                 // 'image' | 'pdf'
-  fileName     String?                 // original filename for the <a download> attribute
+  fileType     String? // 'image' | 'pdf'
+  fileName     String? // original filename for the <a download> attribute
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -865,7 +866,7 @@ model ResearchPaper {
 model BusRoute {
   id             String   @id @default(cuid())
   slug           String   @unique
-  routeName      String                       // "Technical → SU"
+  routeName      String // "Technical → SU"
   busNumber      String
   contact        String
   // String[] paired arrays; admin form serializes via JSON-encoded
@@ -931,39 +932,39 @@ model TransportLanding {
 // publishedAt DESC. No public archive route in Phase 8a (Decision
 // B1) — admin toggles isActive to swap the visible notice.
 model AdmissionNotice {
-  id                    String   @id @default(cuid())
-  slug                  String   @unique
-  title                 String
-  refNo                 String
-  subject               String
-  publishedAt           DateTime
-  displayDate           String?
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  refNo       String
+  subject     String
+  publishedAt DateTime
+  displayDate String?
 
-  headerOverline        String   @default("Office of the Registrar")
+  headerOverline String @default("Office of the Registrar")
 
   // Json string[] of HTML-safe paragraphs (inline <strong>/<em>
   // allowed via dangerouslySetInnerHTML, author-trust caveat from
   // Phase 7 TransportLanding pattern).
-  bodyParagraphs        Json
+  bodyParagraphs Json
 
-  signatoryPreamble     String?
-  signatoryName         String
-  signatoryDesignation  String
+  signatoryPreamble    String?
+  signatoryName        String
+  signatoryDesignation String
 
-  ccLabel               String   @default("Copy for Kind Information (not according to seniority)")
-  ccList                Json
+  ccLabel String @default("Copy for Kind Information (not according to seniority)")
+  ccList  Json
 
-  heroImageUrl          String?
-  heroImagePublicId     String?
+  heroImageUrl      String?
+  heroImagePublicId String?
 
-  fileUrl               String?
-  filePublicId          String?
-  fileName              String?
+  fileUrl      String?
+  filePublicId String?
+  fileName     String?
 
-  isActive              Boolean  @default(true)
-  displayOrder          Int
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  isActive     Boolean  @default(true)
+  displayOrder Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([publishedAt])
   @@index([isActive, publishedAt])
@@ -1007,17 +1008,17 @@ model ProspectusEntry {
 // emerges later (e.g., MSc needs GRE), add a ProgramRequirement
 // child table — additive.
 model AdmissionRequirements {
-  id                         String   @id @default("singleton")
-  intro                      String   @db.Text
+  id    String @id @default("singleton")
+  intro String @db.Text
 
-  undergraduateRequirements  Json     // string[]
-  additionalNotes            Json     // string[]
+  undergraduateRequirements Json // string[]
+  additionalNotes           Json // string[]
 
-  diplomaRequirements        Json     // string[]
-  combinedGpaBody            String   @db.Text   // HTML-allowed (inline <strong>)
-  diplomaQuickCriteria       Json     // [{label, value}]
+  diplomaRequirements  Json // string[]
+  combinedGpaBody      String @db.Text // HTML-allowed (inline <strong>)
+  diplomaQuickCriteria Json // [{label, value}]
 
-  updatedAt                  DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("admission_requirements")
 }
@@ -1032,26 +1033,26 @@ model AdmissionRequirements {
 // cleanly. Future 1:N escape: drop @unique on programId, add
 // intakeYear field.
 model ProgramFeeStructure {
-  id              String   @id @default(cuid())
-  programId       String   @unique
-  program         Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  programId String  @unique
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
 
-  introOverline   String                  // e.g., "B.Sc. in Electrical and Electronics Engineering (EEE)"
-  introHeading    String   @default("Tuition Fee Structure")
-  introBody       String   @db.Text
+  introOverline String // e.g., "B.Sc. in Electrical and Electronics Engineering (EEE)"
+  introHeading  String @default("Tuition Fee Structure")
+  introBody     String @db.Text
 
   // [{iconName, label, value}] — 4 cards (Total Credits, etc.)
-  overviewStats   Json
+  overviewStats Json
   // [{iconName, name, shiftLabel, description,
   //   groups: [{background, tiers: [{gpa, perCredit, total}]}]}]
   // 3-level nesting; admin paste/edit as JSON.
-  shifts          Json
+  shifts        Json
   // [{iconName, title, text}] — 3 policy cards
-  policies        Json
+  policies      Json
 
-  displayOrder    Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([displayOrder])
   @@map("program_fee_structure")
@@ -1071,27 +1072,27 @@ model ProgramFeeStructure {
 // flat columns are clearer admin UX than a Json the admin would
 // have to extend.
 model AdmissionTransferCredits {
-  id                  String   @id @default("singleton")
-  intro               String   @db.Text
+  id    String @id @default("singleton")
+  intro String @db.Text
 
   // {heading, body}[] — body has HTML allowed (inline <strong>)
   minimumGradeBullets Json
 
-  limitMaxLabel       String   @default("Maximum Transfer Limit")
-  limitMaxValue       String
-  limitMaxSubtitle    String
-  limitFeeLabel       String   @default("Credit Transfer Fee")
-  limitFeeValue       String
-  limitFeeSubtitle    String
+  limitMaxLabel    String @default("Maximum Transfer Limit")
+  limitMaxValue    String
+  limitMaxSubtitle String
+  limitFeeLabel    String @default("Credit Transfer Fee")
+  limitFeeValue    String
+  limitFeeSubtitle String
 
-  documentsIntroText  String   @db.Text
-  documents           Json     // [{title, description}]
+  documentsIntroText String @db.Text
+  documents          Json // [{title, description}]
 
-  summaryKicker       String   @default("Quick Reference")
-  summaryHeading      String   @default("Summary of Key Constraints")
-  summaryRows         Json     // [{label, value}]
+  summaryKicker  String @default("Quick Reference")
+  summaryHeading String @default("Summary of Key Constraints")
+  summaryRows    Json // [{label, value}]
 
-  updatedAt           DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("admission_transfer_credits")
 }
@@ -1099,25 +1100,25 @@ model AdmissionTransferCredits {
 // Singleton — chrome around the WaiverCategory + Scholarship
 // multi-row content on /admission/waiver-scholarship.
 model WaiverScholarshipLanding {
-  id                 String   @id @default("singleton")
-  intro              String   @db.Text
+  id    String @id @default("singleton")
+  intro String @db.Text
 
-  part1Kicker        String   @default("Part 01")
-  part1Heading       String   @default("Tuition Fee Waivers")
+  part1Kicker  String @default("Part 01")
+  part1Heading String @default("Tuition Fee Waivers")
 
-  summaryHeading     String   @default("Summary Table")
-  summarySubheading  String   @default("Quick reference for all waiver categories.")
-  summaryRows        Json                          // [{category, max, status}]
-  summaryFooterNote  String   @db.Text
+  summaryHeading    String @default("Summary Table")
+  summarySubheading String @default("Quick reference for all waiver categories.")
+  summaryRows       Json // [{category, max, status}]
+  summaryFooterNote String @db.Text
 
-  part2Kicker        String   @default("Part 02")
-  part2Heading       String   @default("Merit Scholarships")
-  part2Intro         String   @db.Text
+  part2Kicker  String @default("Part 02")
+  part2Heading String @default("Merit Scholarships")
+  part2Intro   String @db.Text
 
-  keyTakeawaysKicker String   @default("Key Takeaways")
-  keyTakeaways       Json                          // string[]
+  keyTakeawaysKicker String @default("Key Takeaways")
+  keyTakeaways       Json // string[]
 
-  updatedAt          DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("waiver_scholarship_landing")
 }
@@ -1129,9 +1130,9 @@ model WaiverScholarshipLanding {
 model WaiverCategory {
   id           String   @id @default(cuid())
   slug         String   @unique
-  iconName     String                              // Lucide name
+  iconName     String // Lucide name
   title        String
-  items        Json                                // [{heading, text}]
+  items        Json // [{heading, text}]
   note         String?  @db.Text
   displayOrder Int
   createdAt    DateTime @default(now())
@@ -1147,11 +1148,11 @@ model WaiverCategory {
 model Scholarship {
   id           String   @id @default(cuid())
   slug         String   @unique
-  name         String                              // "Slab 1"
-  credits      String                              // "10 Credits or Fewer"
-  base         String                              // "2%" / "Highest"
-  perfect      String                              // GPA 4.00 percentage
-  near         String                              // GPA 3.90–3.99 percentage
+  name         String // "Slab 1"
+  credits      String // "10 Credits or Fewer"
+  base         String // "2%" / "Highest"
+  perfect      String // GPA 4.00 percentage
+  near         String // GPA 3.90–3.99 percentage
   isHighlight  Boolean  @default(false)
   displayOrder Int
   createdAt    DateTime @default(now())
@@ -1180,26 +1181,26 @@ model Scholarship {
 // ─────────────────────────────────────────────────────────────────
 
 model ContactPageContent {
-  id                  String   @id @default("singleton")
+  id String @id @default("singleton")
 
   // Hero (PageShell)
-  heroTitle                String              // "Contact Us"
-  heroOverline             String?             // "Get in Touch"
+  heroTitle                String // "Contact Us"
+  heroOverline             String? // "Get in Touch"
   heroImageUrl             String
   heroImagePublicId        String?
-  heroImageVerticalPercent Int      @default(50)
+  heroImageVerticalPercent Int     @default(50)
 
   // Intro paragraph (HTML allowed, single block — page only has one)
-  introBody           String   @db.Text
+  introBody String @db.Text
 
   // Section headings (defaults match the original hardcoded copy)
-  quickContactHeading String   @default("Quick Contact Information")
-  formHeading         String   @default("Send Us a Message")
-  formSubheading      String   @db.Text   // "Have a question or suggestion?..."
-  campusesHeading     String   @default("Campus Locations")
+  quickContactHeading String @default("Quick Contact Information")
+  formHeading         String @default("Send Us a Message")
+  formSubheading      String @db.Text // "Have a question or suggestion?..."
+  campusesHeading     String @default("Campus Locations")
 
   // Form-side response-time hint (rendered above the submit button)
-  responseTimeNote    String              // "We typically respond within 1-2 business days."
+  responseTimeNote String // "We typically respond within 1-2 business days."
 
   // quickContactCards — Json [{ iconName, title, primaryValue,
   //   primaryHref?, secondaryValue?, secondaryHref?, hint? }]
@@ -1209,9 +1210,9 @@ model ContactPageContent {
   // TransportLanding.instructions). Editable via a Json textarea
   // in the admin form — chair Decision (Phase 10 mini): no new
   // structured editor for low-churn content.
-  quickContactCards   Json
+  quickContactCards Json
 
-  updatedAt           DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("contact_page_content")
 }
@@ -1222,8 +1223,8 @@ model ContactPageContent {
 model CampusLocation {
   id           String   @id @default(cuid())
   slug         String   @unique
-  name         String                              // "Permanent Campus"
-  tag          String?                             // "City Campus-1"
+  name         String // "Permanent Campus"
+  tag          String? // "City Campus-1"
   address      String   @db.Text
   phone        String?
   email        String
@@ -1248,7 +1249,7 @@ model CampusLocation {
 // ─────────────────────────────────────────────────────────────────
 
 model JourneyCTAContent {
-  id                   String   @id @default("singleton")
+  id String @id @default("singleton")
 
   // Hero background image (Cloudinary-paired). Vertical percent is
   // 0 = top edge visible, 100 = bottom edge visible; renderer emits
@@ -1256,23 +1257,23 @@ model JourneyCTAContent {
   // standardized from String to Int across all hero-bearing entities.
   heroImageUrl             String
   heroImagePublicId        String?
-  heroImageVerticalPercent Int      @default(50)
+  heroImageVerticalPercent Int     @default(50)
 
   // Display copy. body is HTML-allowed (inline <strong>/<em>) under
   // the Phase 4 J1 author-trusted pattern.
-  heading              String
-  body                 String   @db.Text
+  heading String
+  body    String @db.Text
 
   // Two CTAs (MainNavItem pattern — label + href + isExternal).
-  primaryCtaLabel      String
-  primaryCtaHref       String
-  primaryCtaExternal   Boolean  @default(true)
+  primaryCtaLabel    String
+  primaryCtaHref     String
+  primaryCtaExternal Boolean @default(true)
 
   secondaryCtaLabel    String
   secondaryCtaHref     String
-  secondaryCtaExternal Boolean  @default(false)
+  secondaryCtaExternal Boolean @default(false)
 
-  updatedAt            DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("journey_cta_content")
 }
@@ -1288,14 +1289,14 @@ model JourneyCTAContent {
 // ─────────────────────────────────────────────────────────────────
 
 model LegalPagesContent {
-  id                              String   @id @default("singleton")
+  id String @id @default("singleton")
 
   // Privacy Policy (PageShell hero + structured sections)
-  privacyHeroTitle                String   @default("Privacy Policy")
-  privacyHeroOverline             String?  @default("Legal")
+  privacyHeroTitle                String  @default("Privacy Policy")
+  privacyHeroOverline             String? @default("Legal")
   privacyHeroImageUrl             String
   privacyHeroImagePublicId        String?
-  privacyHeroImageVerticalPercent Int      @default(50)
+  privacyHeroImageVerticalPercent Int     @default(50)
   // sections — Json [{ heading?: string | null, paragraphs: string[] }]
   // Each section is an optional heading + flat paragraph list. Admin
   // edits via SectionsEditor (no raw HTML markup); inline emphasis
@@ -1303,42 +1304,42 @@ model LegalPagesContent {
   privacySections                 Json
 
   // Terms & Conditions (PageShell hero + structured sections)
-  termsHeroTitle                  String   @default("Terms & Conditions")
-  termsHeroOverline               String?  @default("Legal")
-  termsHeroImageUrl               String
-  termsHeroImagePublicId          String?
-  termsHeroImageVerticalPercent   Int      @default(50)
-  termsSections                   Json
+  termsHeroTitle                String  @default("Terms & Conditions")
+  termsHeroOverline             String? @default("Legal")
+  termsHeroImageUrl             String
+  termsHeroImagePublicId        String?
+  termsHeroImageVerticalPercent Int     @default(50)
+  termsSections                 Json
 
-  updatedAt                       DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("legal_pages_content")
 }
 
 model ContactSubmission {
-  id            String   @id @default(cuid())
-  name          String
-  email         String
-  phone         String?
-  subject       String?
-  message       String   @db.Text
+  id          String    @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  subject     String?
+  message     String    @db.Text
   // status — 'new' | 'read' | 'archived'. Zod-validated against the
   // closed set; stored as String for forward flexibility (same
   // pattern as Phase 6 News.category).
-  status        String   @default("new")
-  submittedAt   DateTime @default(now())
+  status      String    @default("new")
+  submittedAt DateTime  @default(now())
   // ipAddress — first hop from x-forwarded-for (Vercel sets this);
   // userAgent — raw header. Both nullable: behind a misconfigured
   // proxy or curl without UA, they may be missing.
-  ipAddress     String?
-  userAgent     String?  @db.Text
+  ipAddress   String?
+  userAgent   String?   @db.Text
   // emailSentAt — null = email skipped (no recipient configured)
   // OR email failed (see emailError). emailError populated only on
   // Resend SDK error; null on success or skipped-no-recipient.
-  emailSentAt   DateTime?
-  emailError    String?  @db.Text
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  emailSentAt DateTime?
+  emailError  String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([status, submittedAt])
   @@index([submittedAt])
@@ -1375,8 +1376,8 @@ model NewsletterPage {
   // Subscribe form
   ctaHeading               String
   ctaBody                  String?
-  ctaButtonLabel           String   // "Subscribe"
-  emailPlaceholder         String   // "you@example.com"
+  ctaButtonLabel           String // "Subscribe"
+  emailPlaceholder         String // "you@example.com"
   // Optional note under the form (e.g. privacy reassurance).
   privacyNote              String?
   updatedAt                DateTime @updatedAt
@@ -1415,10 +1416,10 @@ model PageHero {
 model DepartmentClubApplication {
   id          String   @id @default(cuid())
   fullName    String
-  studentId   String                     // SU ID (e.g. SU1603141114)
+  studentId   String // SU ID (e.g. SU1603141114)
   email       String
   phone       String
-  semester    String                     // '1'..'8' (stored String for forward flex)
+  semester    String // '1'..'8' (stored String for forward flex)
   motivation  String   @db.Text
   // status — 'pending' | 'approved' | 'rejected'. Zod-validated;
   // String for forward flexibility (same as ContactSubmission.status).
@@ -1456,4 +1457,32 @@ model NewsletterSubscriber {
   @@index([createdAt])
   @@index([status, createdAt])
   @@map("newsletter_subscriber")
+}
+
+/// Course structure and credit distribution for a program, shown on the
+/// program page and offered as a PDF at the bottom of it.
+///
+/// Semesters and rows are Json rather than two more tables: nothing queries
+/// an individual course, the whole curriculum is read and rendered in one go,
+/// and a department revising its curriculum replaces the lot. The shapes are
+/// asserted where they are read (coerceSemesters / coerceCreditRows).
+model ProgramCurriculum {
+  id        String  @id @default(cuid())
+  programId String  @unique
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  /// [{ name, courses: [{ code, title, type, credits, remarks, prerequisite }] }]
+  semesters  Json
+  /// [{ semester, total, core, elective, lab, project, cumulative }]
+  creditRows Json
+
+  /// The same content as a downloadable PDF. Null until one is uploaded.
+  pdfUrl      String?
+  pdfPublicId String?
+  pdfFileName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("program_curriculum")
 }
