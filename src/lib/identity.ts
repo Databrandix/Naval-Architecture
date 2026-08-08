@@ -380,8 +380,40 @@ export const getVisitors = cache(async () => {
   return prisma.visitor.findMany({ orderBy: { displayOrder: 'asc' } });
 });
 
-export const getResearchPapers = cache(async () => {
-  return prisma.researchPaper.findMany({ orderBy: { displayOrder: 'asc' } });
+/** Paged: the list runs to a few hundred entries on a department with history. */
+export const getResearchPapers = cache(async (opts?: { skip?: number; take?: number }) => {
+  return prisma.researchPaper.findMany({
+    orderBy: { displayOrder: 'asc' },
+    skip: opts?.skip,
+    take: opts?.take,
+  });
+});
+
+export const getResearchPaperCount = cache(async () => {
+  return prisma.researchPaper.count();
+});
+
+/**
+ * The years the whole list spans, not just the page being shown — the sentence
+ * above the list describes the department's record, which does not change when
+ * somebody turns to page three.
+ */
+export const getResearchYearSpan = cache(async () => {
+  const [oldest, newest] = await Promise.all([
+    prisma.researchPaper.findFirst({
+      where: { publicationYear: { not: null } },
+      orderBy: { publicationYear: 'asc' },
+      select: { publicationYear: true },
+    }),
+    prisma.researchPaper.findFirst({
+      where: { publicationYear: { not: null } },
+      orderBy: { publicationYear: 'desc' },
+      select: { publicationYear: true },
+    }),
+  ]);
+
+  if (!oldest?.publicationYear || !newest?.publicationYear) return null;
+  return { from: oldest.publicationYear, to: newest.publicationYear };
 });
 
 export const getBusRoutes = cache(async () => {
