@@ -416,6 +416,14 @@ export const getResearchYearSpan = cache(async () => {
   return { from: oldest.publicationYear, to: newest.publicationYear };
 });
 
+/** The department's service charter, in the order the department set. */
+export const getServiceCharter = cache(async () => {
+  return prisma.serviceCharterEntry.findMany({
+    orderBy: { displayOrder: 'asc' },
+    select: { id: true, serial: true, title: true, steps: true, responsible: true },
+  });
+});
+
 /** Offices and the level each is on, for the department layout page. */
 export const getOfficeLocations = cache(async () => {
   return prisma.officeLocation.findMany({

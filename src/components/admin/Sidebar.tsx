@@ -113,6 +113,7 @@ const STUDENT_SOCIETY_NAV: NavItem[] = [
   { href: '/admin/visitors',        label: 'Visitors',        icon: Sparkles },
   { href: '/admin/research-papers', label: 'Research Papers', icon: Library },
   { href: '/admin/syllabus',        label: 'Syllabus',        icon: BookText },
+  { href: '/admin/service-charter', label: 'Service Charter', icon: ClipboardList },
 ];
 
 const CAMPUS_SERVICES_NAV: NavItem[] = [

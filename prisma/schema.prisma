@@ -1521,3 +1521,27 @@ model OfficeLocation {
   @@index([displayOrder])
   @@map("office_location")
 }
+
+/// One row of the department's service charter: what a student wants done, the
+/// steps to do it, and who is responsible.
+///
+/// The steps are Json because the source table gives up to three of them and a
+/// service may use one or all three; the person is stored as written, since the
+/// spreadsheet packs a name, title, phone, email and room number into one cell
+/// and splitting that into columns would invent structure the department does
+/// not keep.
+model ServiceCharterEntry {
+  id           String @id @default(cuid())
+  serial       Int
+  title        String @db.Text
+  /// string[] — the process flow, in order.
+  steps        Json
+  responsible  String @db.Text
+  displayOrder Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("service_charter_entry")
+}
