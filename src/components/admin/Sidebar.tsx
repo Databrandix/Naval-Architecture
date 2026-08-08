@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   Building2,
   University,
+  BookOpen,
   GraduationCap,
   Microscope,
   Users,
@@ -69,6 +70,7 @@ const PRIMARY_NAV: NavItem[] = [
   { href: '/admin/department-identity', label: 'Department Identity', icon: Building2 },
   { href: '/admin/university-identity', label: 'University Identity', icon: University },
   { href: '/admin/programs',            label: 'Programs',            icon: GraduationCap },
+  { href: '/admin/program-curriculum',  label: 'Course Curriculum',   icon: BookOpen },
   { href: '/admin/research-areas',      label: 'Research Areas',      icon: Microscope },
   { href: '/admin/faculty',             label: 'Faculty',             icon: UsersRound },
   { href: '/admin/nav',                 label: 'Navigation',          icon: Navigation },
@@ -81,7 +83,7 @@ const PRIMARY_NAV: NavItem[] = [
 const ABOUT_PAGES_NAV: NavItem[] = [
   { href: '/admin/about-overview',        label: 'Overview',         icon: Info },
   { href: '/admin/about-mission-vision',  label: 'Mission & Vision', icon: Info },
-  { href: '/admin/about-club',      label: 'SUEEC',       icon: Info },
+  { href: '/admin/about-club',      label: 'Department Club',  icon: Info },
   { href: '/admin/department-layout',  label: 'Department Layout', icon: MapIcon },
 ];
 
