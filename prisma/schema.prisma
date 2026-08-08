@@ -605,16 +605,16 @@ model LaboratoryFacilityLanding {
 }
 
 model LaboratoryLab {
-  id           String   @id @default(cuid())
+  id           String @id @default(cuid())
   iconName     String // Lucide name ("Flame", "Droplets", …)
   title        String
-  description  String   @db.Text
+  description  String @db.Text
   keyLabel     String // "Key Equipment" / "Key Software" / "Key Processes"
   // keyItems — single comma-separated sentence, rendered as one
   // <p>. Discovery #2 surfaced that the current data is plain
   // String, not String[], so the column matches the render shape.
-  keyItems     String   @db.Text
-  focus        String   @db.Text
+  keyItems     String @db.Text
+  focus        String @db.Text
   displayOrder Int
 
   /// The rest of what a department's Laboratory Information sheet records
@@ -624,11 +624,11 @@ model LaboratoryLab {
   location       String? // "Underground", "Room 402"
   capacity       String? // students at one sitting
   equipmentCount String? // as the department counts it, which is sometimes "40+"
-  software       String? @db.Text
-  inCharge       String? @db.Text // names, roles and phone numbers, one per line
-  safety         String? @db.Text
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  software       String?  @db.Text
+  inCharge       String?  @db.Text // names, roles and phone numbers, one per line
+  safety         String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([displayOrder])
   @@map("laboratory_lab")
@@ -1496,4 +1496,28 @@ model ProgramCurriculum {
   updatedAt DateTime @updatedAt
 
   @@map("program_curriculum")
+}
+
+/// Where each office sits in the building — the "department layout" the
+/// university actually supplies, which is a directory rather than a floor plan.
+///
+/// Separate from DepartmentLayout: that model holds documents (a cover and a
+/// PDF), and a person looking for the Registrar wants a row they can read, not
+/// a file to download.
+model OfficeLocation {
+  id           String  @id @default(cuid())
+  name         String
+  /// "Level: 05" as written, or "Ground Floor" — the wording varies and is the
+  /// department's own.
+  level        String
+  building     String
+  /// Set for the offices belonging to this department, so they can be shown first.
+  isDepartment Boolean @default(false)
+  displayOrder Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("office_location")
 }

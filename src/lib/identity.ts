@@ -416,6 +416,14 @@ export const getResearchYearSpan = cache(async () => {
   return { from: oldest.publicationYear, to: newest.publicationYear };
 });
 
+/** Offices and the level each is on, for the department layout page. */
+export const getOfficeLocations = cache(async () => {
+  return prisma.officeLocation.findMany({
+    orderBy: { displayOrder: 'asc' },
+    select: { id: true, name: true, level: true, building: true, isDepartment: true },
+  });
+});
+
 export const getBusRoutes = cache(async () => {
   return prisma.busRoute.findMany({ orderBy: { displayOrder: 'asc' } });
 });

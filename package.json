@@ -33,10 +33,12 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",
+    "@types/adm-zip": "^0.5.8",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.14.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "adm-zip": "^0.6.0",
     "pdfkit": "^0.19.1",
     "prisma": "^6.19.3",
     "sharp": "^0.34.5",

@@ -85,6 +85,7 @@ const ABOUT_PAGES_NAV: NavItem[] = [
   { href: '/admin/about-mission-vision',  label: 'Mission & Vision', icon: Info },
   { href: '/admin/about-club',      label: 'Department Club',  icon: Info },
   { href: '/admin/department-layout',  label: 'Department Layout', icon: MapIcon },
+  { href: '/admin/office-locations',   label: 'Office Locations',  icon: Building },
 ];
 
 const LAB_SYSTEMS_NAV: NavItem[] = [
