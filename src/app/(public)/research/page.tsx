@@ -1,19 +1,30 @@
 import { Calendar, MapPin, Users, FileText, ExternalLink } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
-import { getResearchPapers, getPageHero } from '@/lib/identity';
+import { getResearchPapers, getPageHero, getDepartmentIdentity } from '@/lib/identity';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Research — Department of Electrical and Electronics Engineering',
-  description:
-    'Published research papers from the Department of Electrical and Electronics Engineering, Sonargaon University.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Research',
+    description: 'Published research papers from the {department}, Sonargaon University.',
+  });
+}
 
 export default async function ResearchPage() {
-  const [papers, hero] = await Promise.all([
+  const [papers, hero, dept] = await Promise.all([
     getResearchPapers(),
     getPageHero('research'),
+    getDepartmentIdentity(),
   ]);
+
+  /* The span is read off the publications rather than written into the page:
+     a list that grows should say so without anybody remembering to edit a
+     sentence underneath it. */
+  const years = papers
+    .map((paper) => paper.publicationYear)
+    .filter((year): year is number => typeof year === 'number');
+  const span = years.length > 0 ? `${Math.min(...years)} to ${Math.max(...years)}` : null;
 
   return (
     <PageShell
@@ -27,10 +38,10 @@ export default async function ResearchPage() {
       <Container>
         <div className="mx-auto max-w-3xl text-center mb-10 md:mb-14">
           <p className="text-[15px] md:text-[16px] leading-[1.85] text-gray-700">
-            A selection of research publications by faculty and students of the
-            Department of Electrical and Electronics Engineering, Sonargaon University, spanning
-            VLSI design, signal processing, renewable energy, communication systems,
-            and more.
+            Research publications by faculty and students of the {dept.name}, Sonargaon
+            University{span ? `, from ${span}` : ''} — ship design and construction,
+            hydrodynamics, marine structures, shipyard practice, and the technical and
+            consultancy work behind them.
           </p>
           <p className="mt-4 inline-flex items-center gap-2 text-[13px] font-semibold text-primary bg-primary/5 px-4 py-1.5 rounded-full">
             <FileText size={14} />
