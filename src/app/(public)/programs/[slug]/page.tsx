@@ -195,6 +195,26 @@ export default async function ProgramPage({ params }: { params: Promise<{ slug: 
           </section>
         )}
 
+        {/* Where the degree leads. Placed after the specializations and before
+            the curriculum: a prospective student asks what the programme is
+            for before asking which courses it contains. */}
+        {program.careerProspects && (
+          <section className="mx-auto mb-16 max-w-6xl md:mb-20">
+            <h3 className="text-primary mb-6 text-center font-display text-xl font-bold md:text-2xl">
+              Career Prospects
+            </h3>
+            <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm md:p-10">
+              <div className="mx-auto flex max-w-3xl flex-col gap-5">
+                {program.careerProspects.split('\n\n').map((paragraph) => (
+                  <p key={paragraph.slice(0, 40)} className="text-[15px] leading-[1.85] text-gray-700">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Course structure, credit distribution, and the same as a PDF */}
         {curriculum && (
           <CurriculumSection

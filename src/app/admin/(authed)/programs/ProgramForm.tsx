@@ -43,6 +43,10 @@ export default function ProgramForm({ initial }: { initial: Program | null }) {
         </div>
         <TextAreaField label="Description" name="description" required rows={4}
                        defaultValue={initial?.description ?? ''} />
+
+        <TextAreaField label="Career prospects (optional) — leave a blank line between paragraphs"
+                       name="careerProspects" rows={8}
+                       defaultValue={initial?.careerProspects ?? ''} />
         <TextAreaField label="Specializations (one per line, optional)"
                        name="specializations" rows={4}
                        defaultValue={(initial?.specializations ?? []).join('\n')} />

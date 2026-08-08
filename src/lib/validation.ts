@@ -87,6 +87,8 @@ export const programCreateSchema = z.object({
   specializations: z.array(z.string()).default([]),
   cta:             z.string().nullable().optional(),
   ctaHref:         z.string().nullable().optional(),
+  /* Blank lines separate paragraphs; the page splits on them. */
+  careerProspects: optionalNullableString,
 });
 
 export const programUpdateSchema = programCreateSchema.partial();

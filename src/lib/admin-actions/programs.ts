@@ -47,6 +47,7 @@ export async function createProgramAction(
     specializations: splitLines(getStr(formData, 'specializations')),
     cta:             emptyToNull(formData.get('cta')),
     ctaHref:         emptyToNull(formData.get('ctaHref')),
+    careerProspects: emptyToNull(formData.get('careerProspects')),
     imageUrl:        emptyToNull(formData.get('imageUrl')),
     imagePublicId:   emptyToNull(formData.get('imagePublicId')),
   };
@@ -81,6 +82,7 @@ export async function createProgramAction(
         specializations: parsed.data.specializations,
         cta:             parsed.data.cta ?? null,
         ctaHref:         parsed.data.ctaHref ?? null,
+        careerProspects: parsed.data.careerProspects ?? null,
       },
     });
   } catch (e: unknown) {
@@ -115,6 +117,7 @@ export async function updateProgramAction(
     specializations: splitLines(getStr(formData, 'specializations')),
     cta:             emptyToNull(formData.get('cta')),
     ctaHref:         emptyToNull(formData.get('ctaHref')),
+    careerProspects: emptyToNull(formData.get('careerProspects')),
     imageUrl:        emptyToNull(formData.get('imageUrl')),
     imagePublicId:   emptyToNull(formData.get('imagePublicId')),
   };

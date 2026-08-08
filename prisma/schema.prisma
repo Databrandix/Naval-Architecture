@@ -162,6 +162,10 @@ model Program {
   cta             String?
   ctaHref         String?
 
+  /// Where the degree leads: employers, roles and further study. Rendered as
+  /// its own section on the programme page.
+  careerProspects String? @db.Text
+
   // Phase 8b — back-relation for ProgramFeeStructure (1:1, optional).
   // Program admin form stays focused on academic metadata (per
   // constraint #12); fee structure lives at /admin/program-fee-structures.
