@@ -150,7 +150,7 @@ export default async function ProgramPage({ params }: { params: Promise<{ slug: 
             <h3 className="text-center font-display text-xl md:text-2xl font-bold text-primary mb-8">
               At a Glance
             </h3>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
               {stats.map((stat) => (
                 <div
                   key={`${stat.label}-${stat.value}`}
@@ -173,12 +173,14 @@ export default async function ProgramPage({ params }: { params: Promise<{ slug: 
 
         {/* Specializations */}
         {Array.isArray(program.specializations) && program.specializations.length > 0 && (
-          <section className="mb-16 md:mb-20 max-w-3xl mx-auto">
+          <section className="mb-16 md:mb-20 max-w-6xl mx-auto">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 md:p-10">
               <h3 className="font-display text-xl md:text-2xl font-bold text-primary mb-6 text-center">
                 Specializations
               </h3>
-              <div className="grid sm:grid-cols-3 gap-4">
+              {/* Two then four, not three: a three-column grid leaves the
+                  fourth specialization stranded on a row of its own. */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {program.specializations.map((spec) => (
                   <div
                     key={spec}

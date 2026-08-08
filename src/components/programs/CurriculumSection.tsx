@@ -152,14 +152,14 @@ export default function CurriculumSection({
         courses.
       </p>
 
-      <div className="mx-auto flex max-w-4xl flex-col gap-3">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3">
         {semesters.map((semester, index) => (
           <SemesterPanel key={semester.name} semester={semester} defaultOpen={index === 0} />
         ))}
       </div>
 
       {creditRows.length > 0 && (
-        <div className="mx-auto mt-12 max-w-4xl">
+        <div className="mx-auto mt-12 max-w-6xl">
           <h3 className="text-primary mb-6 text-center font-display text-xl font-bold md:text-2xl">
             Credit Distribution
           </h3>
@@ -196,7 +196,7 @@ export default function CurriculumSection({
       )}
 
       {pdfUrl && (
-        <div className="mx-auto mt-10 max-w-4xl">
+        <div className="mx-auto mt-10 max-w-6xl">
           <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200 bg-white p-7 text-center shadow-sm sm:flex-row sm:text-left">
             <span className="from-primary to-accent inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-md">
               <Table2 size={22} strokeWidth={1.75} aria-hidden />
