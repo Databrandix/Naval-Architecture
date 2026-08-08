@@ -44,6 +44,54 @@ function fillDown(rows, column) {
 const number = (v) => (v === '' || v === null ? null : Number(v));
 const text = (v) => String(v ?? '').trim();
 
+/**
+ * Courses the spreadsheet's Course_Structure sheet leaves out, keyed by degree
+ * code. Each one is a row the sheet's own Credit_Distribution proves should be
+ * there — the two sheets disagree, and this is which side wins.
+ *
+ * Corrections live here rather than in the database so a re-import does not
+ * silently undo them. Delete an entry once the department fixes its file.
+ */
+const MISSING_COURSES = {
+  'BSC-NAME': [
+    {
+      semester: '4th Year 1st Semester',
+      after: 'NAME 4121',
+      course: {
+        code: 'NAME 4122',
+        title: 'Computational Fluid Dynamics Sessional',
+        type: 'Core',
+        credits: 1.5,
+        prerequisite: null,
+        remarks: 'Sessional',
+      },
+      // Course_Structure sums this semester to 20 credits; Credit_Distribution
+      // says 21.5 and reaches the programme's stated 161. Every other
+      // four-credit theory course in the programme has a 1.5-credit sessional
+      // beside it; Computational Fluid Dynamics was the only one without.
+    },
+  ],
+};
+
+function applyMissingCourses(semesters, degreeCode) {
+  const corrections = MISSING_COURSES[degreeCode.toUpperCase()] ?? [];
+
+  for (const { semester: semesterName, after, course } of corrections) {
+    const semester = semesters.find((s) => s.name === semesterName);
+    if (!semester) {
+      console.warn(`  correction skipped: no semester "${semesterName}"`);
+      continue;
+    }
+    if (semester.courses.some((c) => c.code === course.code)) continue;
+
+    const at = semester.courses.findIndex((c) => c.code === after);
+    semester.courses.splice(at === -1 ? semester.courses.length : at + 1, 0, course);
+    console.log(`  added missing course ${course.code} to ${semesterName}`);
+  }
+
+  return semesters;
+}
+
 function buildSemesters(rows) {
   const withSemester = fillDown(
     rows.filter((r) => text(r['Course Code'])),
@@ -89,7 +137,10 @@ function buildCreditRows(rows) {
 async function main() {
   const workbook = XLSX.read(readFileSync(xlsxPath));
 
-  const semesters = buildSemesters(sheet(workbook, 'Course_Structure'));
+  const semesters = applyMissingCourses(
+    buildSemesters(sheet(workbook, 'Course_Structure')),
+    degreeCode,
+  );
   const creditRows = buildCreditRows(sheet(workbook, 'Credit_Distribution'));
 
   const program = await prisma.program.findFirst({
