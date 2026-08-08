@@ -1,13 +1,41 @@
 import { GraduationCap, CalendarDays, CreditCard, BookOpen, CheckCircle2, ArrowRight } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
-import { getProgramBySlug, getProgramFeeStructureBySlug, getPageHero } from '@/lib/identity';
+import { notFound } from 'next/navigation';
+import {
+  getProgramBySlug,
+  getProgramFeeStructureBySlug,
+  getPageHero,
+  getPrograms,
+  getDepartmentIdentity,
+} from '@/lib/identity';
 import { DynamicLucideIcon } from '@/components/ui/DynamicLucideIcon';
 
-export const metadata = {
-  title: 'B.Sc. in EEE — Program Overview',
-  description: 'Program overview, specializations, and key information for B.Sc. in Electrical and Electronic Engineering at Sonargaon University.',
-};
+/**
+ * One page per program, addressed by its degree code lowercased
+ * (`BSc-NAME` → /programs/bsc-name).
+ *
+ * This used to be a fixed `/programs/bsc-eee` route with the title written
+ * into the file, which meant a department with two programs could only ever
+ * show one of them, and starting a new department site meant renaming a
+ * directory.
+ */
+export function generateStaticParams() {
+  return getPrograms().then((programs) =>
+    programs.map((program) => ({ slug: program.degreeCode.toLowerCase() })),
+  );
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const [program, dept] = await Promise.all([getProgramBySlug(slug), getDepartmentIdentity()]);
+  if (!program) return { title: 'Program Not Found' };
+
+  return {
+    title: `${program.programName} — Program Overview`,
+    description: `Program overview, specializations, and key information for ${program.programName} at Sonargaon University, ${dept.name}.`,
+  };
+}
 
 type OverviewStat = { iconName: string; label: string; value: string };
 
@@ -23,22 +51,18 @@ function coerceOverview(v: unknown): OverviewStat[] {
     .filter((s) => s.label && s.value);
 }
 
-export default async function ProgramPage() {
+export default async function ProgramPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const [program, fee, hero] = await Promise.all([
-    getProgramBySlug('bsc-eee'),
-    getProgramFeeStructureBySlug('bsc-eee'),
-    getPageHero('program-bsc-eee'),
+    getProgramBySlug(slug),
+    getProgramFeeStructureBySlug(slug),
+    getPageHero(`program-${slug}`),
   ]);
 
-  if (!program) {
-    return (
-      <PageShell title="Program Not Found" overline="Programs">
-        <Container>
-          <p className="text-center text-gray-500 py-12">Program not found.</p>
-        </Container>
-      </PageShell>
-    );
-  }
+  /* A 404 rather than a "not found" page body: an address that names a
+     program this department does not offer is a wrong address, and telling
+     search engines otherwise puts an empty page in the index. */
+  if (!program) notFound();
 
   const nameParts = program.programName.split(' — ');
   const overline = nameParts.length > 1 ? nameParts[0] : undefined;

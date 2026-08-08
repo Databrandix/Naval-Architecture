@@ -18,9 +18,9 @@ import { toast } from 'sonner';
 import { useAdminListItems } from '@/lib/hooks/useAdminListItems';
 import { useConfirm } from '@/components/admin/ConfirmDialogProvider';
 import {
-  deleteEeeClubApplicationAction,
-  updateEeeClubApplicationStatusAction,
-} from '@/lib/admin-actions/eee-club-applications';
+  deleteDepartmentClubApplicationAction,
+  updateDepartmentClubApplicationStatusAction,
+} from '@/lib/admin-actions/club-applications';
 
 type ApplicationRow = {
   id:          string;
@@ -65,7 +65,7 @@ export default function ApplicationsList({ items: initialItems }: { items: Appli
   }
 
   async function handleStatus(id: string, next: 'pending' | 'approved' | 'rejected') {
-    const res = await updateEeeClubApplicationStatusAction(id, next);
+    const res = await updateDepartmentClubApplicationStatusAction(id, next);
     if (res.ok) {
       setStatusOverrides((prev) => ({ ...prev, [id]: next }));
       toast.success(`Marked as ${next}`);
@@ -83,7 +83,7 @@ export default function ApplicationsList({ items: initialItems }: { items: Appli
       variant: 'danger',
     });
     if (!ok) return;
-    const res = await deleteEeeClubApplicationAction(id);
+    const res = await deleteDepartmentClubApplicationAction(id);
     if (res.ok) {
       removeById(id);
       toast.success('Application removed');

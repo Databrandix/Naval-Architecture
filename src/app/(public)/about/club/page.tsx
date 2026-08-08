@@ -2,10 +2,10 @@ import Image from 'next/image';
 import { ArrowRight, Network } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
-import { getAboutEeeClub } from '@/lib/identity';
+import { getAboutDepartmentClub } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { DynamicLucideIcon } from '@/components/ui/DynamicLucideIcon';
-import JoinEeeClubButton from './JoinEeeClubButton';
+import JoinClubButton from './JoinClubButton';
 
 export const metadata = {
   title: 'SU Electrical and Electronic Club — Department of Electrical and Electronics Engineering',
@@ -53,11 +53,11 @@ function coerceActivities(v: unknown): ActivityRow[] {
     .filter((r) => r.title);
 }
 
-export default async function AboutEeeClubPage() {
-  const row = await getAboutEeeClub();
+export default async function AboutDepartmentClubPage() {
+  const row = await getAboutDepartmentClub();
   if (!row) {
     throw new Error(
-      'AboutEeeClub row missing (id="singleton"). Run `npm run db:seed`.',
+      'AboutDepartmentClub row missing (id="singleton"). Run `npm run db:seed`.',
     );
   }
 
@@ -205,7 +205,7 @@ export default async function AboutEeeClubPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
-              <JoinEeeClubButton label={row.networkPrimaryCtaLabel} />
+              <JoinClubButton label={row.networkPrimaryCtaLabel} clubName={row.heroTitle} />
               {row.networkSecondaryCtaLabel && row.networkSecondaryCtaHref && (
                 <a
                   href={row.networkSecondaryCtaHref}

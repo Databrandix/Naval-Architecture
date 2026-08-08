@@ -5,11 +5,11 @@ import ApplicationsList from './ApplicationsList';
 
 export const metadata = { title: 'SUEEC — Applications' };
 
-export default async function EeeClubApplicationsPage() {
+export default async function DepartmentClubApplicationsPage() {
   const session = await getSession();
   if (!session?.user) redirect('/admin/login');
 
-  const applications = await prisma.eeeClubApplication.findMany({
+  const applications = await prisma.departmentClubApplication.findMany({
     orderBy: { submittedAt: 'desc' },
   });
 
@@ -23,7 +23,7 @@ export default async function EeeClubApplicationsPage() {
         </h1>
         <p className="mt-1 text-sm text-gray-500">
           Join applications submitted via the public{' '}
-          <code className="font-mono">/about/eee-club</code> popup form.{' '}
+          <code className="font-mono">/about/club</code> popup form.{' '}
           {applications.length} total
           {pendingCount > 0 ? ` · ${pendingCount} pending review` : ''}.
         </p>

@@ -448,7 +448,7 @@ export const laboratoryLabCreateSchema = z.object({
 
 export const laboratoryLabUpdateSchema = laboratoryLabCreateSchema.partial();
 
-export const aboutEeeClubUpdateSchema = z.object({
+export const aboutDepartmentClubUpdateSchema = z.object({
   heroTitle:                z.string().min(1).max(300),
   heroOverline:             optionalNullableString,
   heroImageUrl:             z.string().min(1),
@@ -1042,7 +1042,7 @@ export const contactSubmissionStatusUpdateSchema = z.object({
 // ─────────────────────────────────────────────────────────────────
 
 // Each advantage row in the NewsletterPage.advantages Json array.
-// Mirrors the AboutEeeClub.activities shape (Json structured editor)
+// Mirrors the AboutDepartmentClub.activities shape (Json structured editor)
 // — iconName resolves through DynamicLucideIcon at render time.
 const newsletterAdvantagesArraySchema = z.array(
   z.object({
@@ -1080,25 +1080,25 @@ export const newsletterSubscribeSchema = z.object({
 //  SUEEC join application — public submit + admin status edit
 // ─────────────────────────────────────────────────────────────────
 
-const eeeClubSemesterEnum = z.enum(['1', '2', '3', '4', '5', '6', '7', '8']);
+const clubSemesterEnum = z.enum(['1', '2', '3', '4', '5', '6', '7', '8']);
 
-export const eeeClubApplicationCreateSchema = z.object({
+export const departmentClubApplicationCreateSchema = z.object({
   fullName:   z.string().trim().min(1).max(200),
   studentId:  z.string().trim().min(1).max(50),
   email:      z.string().trim().email().max(320),
   phone:      z.string().trim().min(1).max(50),
-  semester:   eeeClubSemesterEnum,
+  semester:   clubSemesterEnum,
   motivation: z.string().trim().min(1).max(2000),
 });
 
-export const eeeClubApplicationStatusEnum = z.enum([
+export const departmentClubApplicationStatusEnum = z.enum([
   'pending',
   'approved',
   'rejected',
 ]);
 
-export const eeeClubApplicationStatusUpdateSchema = z.object({
-  status: eeeClubApplicationStatusEnum,
+export const departmentClubApplicationStatusUpdateSchema = z.object({
+  status: departmentClubApplicationStatusEnum,
 });
 
 // Generic page-hero update. pageKey + publicPath + pageLabel are

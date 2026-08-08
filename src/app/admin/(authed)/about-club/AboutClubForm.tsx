@@ -2,15 +2,15 @@
 
 import { useActionState, useEffect } from 'react';
 import { toast } from 'sonner';
-import type { AboutEeeClub } from '@prisma/client';
+import type { AboutDepartmentClub } from '@prisma/client';
 import ImageUploader from '@/components/admin/ImageUploader';
 import HeroImagePositionSlider from '@/components/admin/HeroImagePositionSlider';
 import StatsEditor from '@/components/admin/StatsEditor';
 import ActivitiesEditor from '@/components/admin/ActivitiesEditor';
 import {
-  updateAboutEeeClubAction,
+  updateAboutDepartmentClubAction,
   type ActionResult,
-} from '@/lib/admin-actions/about-eee-club';
+} from '@/lib/admin-actions/about-club';
 
 type State = ActionResult | { ok: null };
 
@@ -18,9 +18,9 @@ type State = ActionResult | { ok: null };
 // shared IconInputField inside ActivitiesEditor; the legacy curated
 // hint list is gone.
 
-export default function AboutEeeClubForm({ initial }: { initial: AboutEeeClub | null }) {
+export default function AboutClubForm({ initial }: { initial: AboutDepartmentClub | null }) {
   const [state, formAction, pending] = useActionState<State, FormData>(
-    updateAboutEeeClubAction,
+    updateAboutDepartmentClubAction,
     { ok: null },
   );
 

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth-server';
-import { eeeClubApplicationStatusUpdateSchema } from '@/lib/validation';
+import { departmentClubApplicationStatusUpdateSchema } from '@/lib/validation';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -15,18 +15,18 @@ async function requireAuth(): Promise<ActionResult | null> {
 }
 
 function revalidateSurfaces() {
-  revalidatePath('/admin/eee-club-applications');
+  revalidatePath('/admin/club-applications');
   revalidatePath('/admin');
 }
 
-export async function updateEeeClubApplicationStatusAction(
+export async function updateDepartmentClubApplicationStatusAction(
   id: string,
   rawStatus: string,
 ): Promise<ActionResult> {
   const denied = await requireAuth();
   if (denied) return denied;
 
-  const parsed = eeeClubApplicationStatusUpdateSchema.safeParse({ status: rawStatus });
+  const parsed = departmentClubApplicationStatusUpdateSchema.safeParse({ status: rawStatus });
   if (!parsed.success) {
     return {
       ok: false,
@@ -35,7 +35,7 @@ export async function updateEeeClubApplicationStatusAction(
   }
 
   try {
-    await prisma.eeeClubApplication.update({
+    await prisma.departmentClubApplication.update({
       where: { id },
       data: { status: parsed.data.status },
     });
@@ -53,14 +53,14 @@ export async function updateEeeClubApplicationStatusAction(
   return { ok: true };
 }
 
-export async function deleteEeeClubApplicationAction(
+export async function deleteDepartmentClubApplicationAction(
   id: string,
 ): Promise<ActionResult> {
   const denied = await requireAuth();
   if (denied) return denied;
 
   try {
-    await prisma.eeeClubApplication.delete({ where: { id } });
+    await prisma.departmentClubApplication.delete({ where: { id } });
   } catch (e: unknown) {
     if (
       e instanceof Prisma.PrismaClientKnownRequestError &&

@@ -1,7 +1,13 @@
 import type { MetadataRoute } from 'next';
 import { prisma } from '@/lib/db';
 
-const BASE_URL = 'https://eee-engineering-olive.vercel.app';
+/**
+ * Set NEXT_PUBLIC_SITE_URL in Vercel to this site's own address. It was a
+ * literal here, which meant a copy of this codebase kept publishing another
+ * department's domain in its sitemap — pointing search engines at the wrong
+ * site while looking perfectly healthy.
+ */
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 const staticRoutes: { path: string; priority: number; changeFrequency: 'weekly' | 'monthly' | 'yearly' }[] = [
   { path: '/', priority: 1.0, changeFrequency: 'weekly' },
@@ -11,7 +17,7 @@ const staticRoutes: { path: string; priority: number; changeFrequency: 'weekly' 
   { path: '/about/mission-vision', priority: 0.7, changeFrequency: 'yearly' },
   { path: '/about/laboratory-facility', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/about/lab-facility', priority: 0.7, changeFrequency: 'monthly' },
-  { path: '/about/eee-club', priority: 0.7, changeFrequency: 'monthly' },
+  { path: '/about/club', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/about/department-layout', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/admission/requirements', priority: 0.9, changeFrequency: 'monthly' },
   { path: '/admission/tuition-fees', priority: 0.9, changeFrequency: 'monthly' },
@@ -32,7 +38,6 @@ const staticRoutes: { path: string; priority: number; changeFrequency: 'weekly' 
   { path: '/research', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/contact', priority: 0.7, changeFrequency: 'yearly' },
   { path: '/transport-service', priority: 0.6, changeFrequency: 'yearly' },
-  { path: '/programs/bsc-eee', priority: 0.8, changeFrequency: 'monthly' },
 ];
 
 // Sitemap is a server function — Phase 7 cuts the stale faculty-data
@@ -42,10 +47,13 @@ const staticRoutes: { path: string; priority: number; changeFrequency: 'weekly' 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
-  const [facultyRows, eventRows, newsRows] = await Promise.all([
+  const [facultyRows, eventRows, newsRows, programRows] = await Promise.all([
     prisma.faculty.findMany({ select: { slug: true } }),
     prisma.event.findMany({ select: { slug: true } }),
     prisma.news.findMany({ select: { slug: true } }),
+    /* Programs differ per department, so they are listed from the table
+       rather than written into staticRoutes above. */
+    prisma.program.findMany({ select: { degreeCode: true } }),
   ]);
 
   const statics: MetadataRoute.Sitemap = staticRoutes.map(({ path, priority, changeFrequency }) => ({
@@ -76,5 +84,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [...statics, ...facultyPages, ...eventPages, ...newsPages];
+  const programPages: MetadataRoute.Sitemap = programRows.map((p) => ({
+    url: `${BASE_URL}/programs/${p.degreeCode.toLowerCase()}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }));
+
+  return [...statics, ...programPages, ...facultyPages, ...eventPages, ...newsPages];
 }

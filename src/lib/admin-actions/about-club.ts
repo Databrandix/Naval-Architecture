@@ -5,7 +5,7 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth-server';
 import { sanitizeHtml } from '@/lib/sanitize-html';
-import { aboutEeeClubUpdateSchema } from '@/lib/validation';
+import { aboutDepartmentClubUpdateSchema } from '@/lib/validation';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -32,7 +32,7 @@ function parseJsonArray(fd: FormData, key: string): unknown {
   }
 }
 
-export async function updateAboutEeeClubAction(
+export async function updateAboutDepartmentClubAction(
   _prev: ActionResult | { ok: null },
   formData: FormData,
 ): Promise<ActionResult> {
@@ -64,7 +64,7 @@ export async function updateAboutEeeClubAction(
     networkSecondaryCtaHref:  emptyToNull(formData.get('networkSecondaryCtaHref')),
   };
 
-  const parsed = aboutEeeClubUpdateSchema.safeParse(raw);
+  const parsed = aboutDepartmentClubUpdateSchema.safeParse(raw);
   if (!parsed.success) {
     return {
       ok: false,
@@ -88,7 +88,7 @@ export async function updateAboutEeeClubAction(
   };
 
   try {
-    await prisma.aboutEeeClub.upsert({
+    await prisma.aboutDepartmentClub.upsert({
       where: { id: 'singleton' },
       create: { id: 'singleton', ...data },
       update: data,
@@ -97,8 +97,8 @@ export async function updateAboutEeeClubAction(
     return { ok: false, error: e instanceof Error ? e.message : 'Database error' };
   }
 
-  revalidatePath('/admin/about-eee-club');
+  revalidatePath('/admin/about-club');
   revalidatePath('/admin');
-  revalidatePath('/about/eee-club');
+  revalidatePath('/about/club');
   return { ok: true };
 }

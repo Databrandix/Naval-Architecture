@@ -191,8 +191,8 @@ export const getAboutMissionVision = cache(async () => {
   return prisma.aboutMissionVision.findUnique({ where: { id: 'singleton' } });
 });
 
-export const getAboutEeeClub = cache(async () => {
-  return prisma.aboutEeeClub.findUnique({ where: { id: 'singleton' } });
+export const getAboutDepartmentClub = cache(async () => {
+  return prisma.aboutDepartmentClub.findUnique({ where: { id: 'singleton' } });
 });
 
 // ─────────────────────────────────────────────────────────────────
@@ -431,12 +431,25 @@ export const getProgramFeeStructures = cache(async () => {
   });
 });
 
+/**
+ * A program by its degree code, matched case-insensitively so the URL can be
+ * the lowercased code (`BSc-NAME` → /programs/bsc-name).
+ *
+ * Both of these took a slug and ignored it, returning `findFirst()` — the
+ * first program in the table whatever was asked for. That was invisible while
+ * a department offered exactly one program and silently wrong the moment it
+ * offered two: every program page showed the same one, with the fees of that
+ * one attached.
+ */
 export const getProgramBySlug = cache(async (slug: string) => {
-  return prisma.program.findFirst();
+  return prisma.program.findFirst({
+    where: { degreeCode: { equals: slug, mode: 'insensitive' } },
+  });
 });
 
 export const getProgramFeeStructureBySlug = cache(async (slug: string) => {
   const program = await prisma.program.findFirst({
+    where: { degreeCode: { equals: slug, mode: 'insensitive' } },
     select: { id: true },
   });
   if (!program) return null;

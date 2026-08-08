@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
-import { eeeClubApplicationCreateSchema } from '@/lib/validation';
+import { departmentClubApplicationCreateSchema } from '@/lib/validation';
 import { checkRateLimit } from '@/lib/rate-limit';
 
 // Honeypot field name — must match the hidden input in
-// JoinEeeClubModal. Real users never fill it; bots fill all inputs.
+// JoinClubButton. Real users never fill it; bots fill all inputs.
 const HONEYPOT_FIELD = 'website';
 
 function getClientIp(request: NextRequest): string | null {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
   // Dedicated namespace so the bucket is not shared with the
   // contact form or the newsletter signup.
-  const rateLimitKey = `eee-club-apply:${ip ?? 'no-ip'}`;
+  const rateLimitKey = `club-apply:${ip ?? 'no-ip'}`;
   const limit = checkRateLimit(rateLimitKey);
   if (!limit.allowed) {
     const retryAfter = Math.max(1, Math.ceil((limit.resetMs - Date.now()) / 1000));
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const parsed = eeeClubApplicationCreateSchema.safeParse(body);
+  const parsed = departmentClubApplicationCreateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       {
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await prisma.eeeClubApplication.create({
+    await prisma.departmentClubApplication.create({
       data: {
         ...parsed.data,
         // Normalize email so duplicates only differ by case still group.
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  revalidatePath('/admin/eee-club-applications');
+  revalidatePath('/admin/club-applications');
   revalidatePath('/admin');
 
   return NextResponse.json({ ok: true });

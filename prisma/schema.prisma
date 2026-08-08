@@ -471,7 +471,7 @@ model AboutMissionVision {
   @@map("about_mission_vision")
 }
 
-model AboutEeeClub {
+model AboutDepartmentClub {
   id                       String   @id @default("singleton")
   // Hero
   heroTitle                String
@@ -509,7 +509,7 @@ model AboutEeeClub {
   networkSecondaryCtaHref  String?
   updatedAt                DateTime @updatedAt
 
-  @@map("about_eee_club")
+  @@map("about_department_club")
 }
 
 model DepartmentLayout {
@@ -594,7 +594,7 @@ model LaboratoryFacilityLanding {
   featuresOverline  String?             // "What Sets Us Apart"
   featuresHeading   String              // "Why Our Labs Matter"
   // features — [{ iconName, title, description }] variable list
-  // Same Json shape pattern as Phase 4 AboutEeeClub.activities;
+  // Same Json shape pattern as Phase 4 AboutDepartmentClub.activities;
   // iconName resolved against IconMap at render time with
   // FlaskConical fallback.
   features          Json
@@ -1385,7 +1385,7 @@ model NewsletterPage {
 }
 
 // Generic per-page hero CMS. Each public page that doesn't already
-// own a singleton with hero fields (AboutOverview, AboutEeeClub,
+// own a singleton with hero fields (AboutOverview, AboutDepartmentClub,
 // LegalPage, NewsLanding, ContactPageContent, NewsletterPage, etc.)
 // gets a row keyed by `pageKey` — that way the chair can change the
 // hero image + copy independently per page without N singleton
@@ -1412,7 +1412,7 @@ model PageHero {
 // SUEEC join applications — populated by the public popup form
 // on /about/eee-club. Admin reviews + approves/rejects via
 // /admin/eee-club-applications.
-model EeeClubApplication {
+model DepartmentClubApplication {
   id          String   @id @default(cuid())
   fullName    String
   studentId   String                     // SU ID (e.g. SU1603141114)
@@ -1432,7 +1432,7 @@ model EeeClubApplication {
 
   @@index([status, submittedAt])
   @@index([submittedAt])
-  @@map("eee_club_application")
+  @@map("department_club_application")
 }
 
 model NewsletterSubscriber {

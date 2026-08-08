@@ -1,5 +1,5 @@
 {
-  "name": "sonargaon-university-eee-department",
+  "name": "sonargaon-university-naval-architecture-department",
   "private": true,
   "version": "0.1.0",
   "scripts": {
@@ -45,5 +45,8 @@
   },
   "overrides": {
     "postcss": "^8.5.10"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
