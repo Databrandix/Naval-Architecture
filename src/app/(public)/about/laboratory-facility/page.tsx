@@ -3,12 +3,15 @@ import Container from '@/components/ui/Container';
 import { getLaboratoryFacilityLanding, getLaboratoryLabs } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { DynamicLucideIcon } from '@/components/ui/DynamicLucideIcon';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Laboratory Facility — Department of Electrical and Electronics Engineering',
-  description:
-    'Hands-on laboratories of the Department of Mechanical Engineering at Sonargaon University — thermodynamics, fluid mechanics, machine shop, materials, CAD, and welding.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Laboratory Facility',
+    description:
+      'Hands-on laboratories of the {department} at Sonargaon University — machining and fabrication, structures and materials, fluid mechanics and hydraulics, fluid machinery, marine engines and heat transfer.',
+  });
+}
 
 // Phase 20 — lab.iconName + feature.iconName both resolve via
 // DynamicLucideIcon against the full Lucide library.
