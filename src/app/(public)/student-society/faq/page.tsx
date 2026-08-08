@@ -2,12 +2,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getFaqs, getPageHero } from '@/lib/identity';
 import FAQList from './FAQList';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'FAQ — Department of Electrical and Electronics Engineering',
-  description:
-    'Frequently asked questions about admission, rankings, campus, programs, and exams at Sonargaon University.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'FAQ',
+    description:
+      'Frequently asked questions about admission, rankings, campus, programs, and exams at Sonargaon University.',
+  });
+}
 
 export default async function FAQPage() {
   const [faqs, hero] = await Promise.all([

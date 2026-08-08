@@ -19,7 +19,7 @@ export default async function DepartmentClubApplicationsPage() {
     <div className="space-y-6 max-w-5xl">
       <header>
         <h1 className="text-2xl font-display font-bold text-gray-900">
-          SU Electrical and Electronic Club — Applications
+          Department Club — Applications
         </h1>
         <p className="mt-1 text-sm text-gray-500">
           Join applications submitted via the public{' '}

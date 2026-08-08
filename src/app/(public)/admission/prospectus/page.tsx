@@ -2,11 +2,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getProspectusEntries, getPageHero } from '@/lib/identity';
 import ProspectusClient from './ProspectusClient';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Prospectus — Department of Electrical and Electronics Engineering',
-  description:     'Program prospectus PDFs for Electrical and Electronics Engineering at Sonargaon University.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Prospectus',
+    description:
+      'Program prospectus PDFs for {department} at Sonargaon University.',
+  });
+}
 
 export default async function ProspectusPage() {
   const [entries, hero] = await Promise.all([

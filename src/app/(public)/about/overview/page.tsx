@@ -2,12 +2,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getAboutOverview } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Overview — Department of Electrical and Electronics Engineering',
-  description:
-    'Overview of the Department of Mechanical Engineering — programs, vision, and the scope of mechanical engineering as a discipline and a career.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Overview',
+    description:
+      'Overview of the Department of Mechanical Engineering — programs, vision, and the scope of mechanical engineering as a discipline and a career.',
+  });
+}
 
 export default async function OverviewPage() {
   const row = await getAboutOverview();

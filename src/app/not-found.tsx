@@ -1,12 +1,15 @@
 import Link from 'next/link';
 import { Home, Search, ArrowLeft, Cog } from 'lucide-react';
 import Container from '@/components/ui/Container';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Page Not Found',
-  description:
-    "The page you're looking for doesn't exist on the Department of Electrical and Electronics Engineering website.",
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Page Not Found',
+    description:
+      "The page you are looking for does not exist on the {department} website.",
+  });
+}
 
 const quickLinks = [
   { name: 'Department Overview', href: '/about/overview' },

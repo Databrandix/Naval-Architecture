@@ -4,12 +4,15 @@ import Container from '@/components/ui/Container';
 import { getActiveAdmissionNotice, getPageHero } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { withAttachmentDownload } from '@/lib/pdf-helpers';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Admission Notice — Department of Electrical and Electronics Engineering',
-  description:
-    'Official admission notice from Sonargaon University, Office of the Registrar.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Admission Notice',
+    description:
+      'Official admission notice from Sonargaon University, Office of the Registrar.',
+  });
+}
 
 // Phase 8a — DB-driven. Renders the single latest isActive=true row
 // (Decision B1 — no public archive route; admin toggles isActive to

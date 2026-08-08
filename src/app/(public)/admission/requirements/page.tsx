@@ -8,12 +8,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getAdmissionRequirements, getPageHero } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Admission Requirements — Department of Electrical and Electronics Engineering',
-  description:
-    'Admission requirements at Sonargaon University — Undergraduate and Diploma (Engineering) entry criteria.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Admission Requirements',
+    description:
+      'Admission requirements at Sonargaon University — Undergraduate and Diploma (Engineering) entry criteria.',
+  });
+}
 
 // Phase 8b — DB-driven singleton. Fixed section labels ("Undergraduate
 // Programs", "For Diploma (Engineering) Students", "Eligibility",

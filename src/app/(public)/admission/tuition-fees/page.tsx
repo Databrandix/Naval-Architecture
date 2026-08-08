@@ -3,12 +3,15 @@ import Container from '@/components/ui/Container';
 import { getProgramFeeStructures, getPageHero } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { DynamicLucideIcon } from '@/components/ui/DynamicLucideIcon';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Tuition Fees — Department of Electrical and Electronics Engineering',
-  description:
-    'Tuition fee structures by program at Sonargaon University Department of Electrical and Electronics Engineering.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Tuition Fees',
+    description:
+      'Tuition fee structures by program at Sonargaon University {department}.',
+  });
+}
 
 // Phase 20 — overview / shifts / policies all use DynamicLucideIcon
 // against the full Lucide library; silent HelpCircle fallback on

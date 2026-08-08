@@ -2,12 +2,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getEvents, getPageHero } from '@/lib/identity';
 import EventsClient from './EventsClient';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Events — Department of Electrical and Electronics Engineering',
-  description:
-    'Departmental events from the EEE Department at Sonargaon University — sports, industrial visits, seminars, exhibitions.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Events',
+    description:
+      'Departmental events from the EEE Department at Sonargaon University — sports, industrial visits, seminars, exhibitions.',
+  });
+}
 
 export default async function EventsPage() {
   const [events, hero] = await Promise.all([

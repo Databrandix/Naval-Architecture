@@ -84,7 +84,10 @@ export default async function HomePage() {
       />
       <ProgramsSection programs={programs} />
       <QuickLinksSection />
-      <NoticesSection notices={noticesTop} />
+      <NoticesSection
+        notices={noticesTop}
+        departmentName={dept.name.replace(/^Department of\s+/i, '')}
+      />
       <ResearchLabsSection labs={labs} />
       <MajorResearchSection areas={researchAreas} />
       <EventsSection events={eventsTop} />

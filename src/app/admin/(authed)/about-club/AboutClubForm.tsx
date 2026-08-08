@@ -25,7 +25,7 @@ export default function AboutClubForm({ initial }: { initial: AboutDepartmentClu
   );
 
   useEffect(() => {
-    if (state.ok === true) toast.success('About SU Electrical and Electronic Club saved');
+    if (state.ok === true) toast.success('the department club saved');
     if (state.ok === false) toast.error(state.error);
   }, [state]);
 

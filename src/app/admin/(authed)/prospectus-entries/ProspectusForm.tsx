@@ -45,7 +45,7 @@ export default function ProspectusForm({ initial }: { initial: ProspectusEntry |
         <TextField label="Title (full)" name="title" required defaultValue={initial?.title ?? ''} />
         <TextField label="Short title (shown on card)" name="shortTitle" required defaultValue={initial?.shortTitle ?? ''} />
         <TextField label="Department" name="department" required
-                   defaultValue={initial?.department ?? 'Electrical and Electronics Engineering'} />
+                   defaultValue={initial?.department ?? ''} />
       </Card>
 
       <Card title="Cover image">

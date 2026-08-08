@@ -1,30 +1,3 @@
-export const programs: {
-  id: string;
-  title: string;
-  subtitle?: string;
-  duration?: string;
-  description: string;
-  image: string;
-  specializations?: string[];
-  cta: string;
-}[] = [
-  {
-    id: 'undergrad',
-    title: 'Undergraduate',
-    subtitle: 'B.Sc. in Electrical and Electronics Engineering',
-    duration: '4 Years · 8 Semesters',
-    description: 'Our flagship undergraduate program builds a strong foundation in core electrical and electronics engineering — combining rigorous theory, modern lab practice, and design projects that prepare graduates for industry, research, and global postgraduate study.',
-    image: '/assets/program-undergraduate.webp',
-    specializations: [
-      'Thermal Engineering',
-      'Design & Manufacturing',
-      'Robotics & Automation',
-      'Energy Systems',
-    ],
-    cta: 'View More',
-  },
-];
-
 // quickLinks — Navbar mobile drawer no longer reads this (Phase 3:
 // derives from main_nav 'Admission' group); kept here for the
 // homepage QuickLinksSection content card, which Phase 5+ will
@@ -38,16 +11,6 @@ export const quickLinks: { name: string; href: string; external?: boolean; disab
   { name: 'ERP', href: 'http://sue.su.edu.bd:5081/sonargaon_erp/', external: true },
   { name: 'Admission Notice', href: '/admission/notice' },
   { name: 'Library', href: 'http://lib.su.edu.bd', external: true },
-];
-
-export const researchAreas = [
-  { name: 'Thermodynamics & Heat Transfer', icon: 'Flame' },
-  { name: 'Fluid Mechanics & CFD', icon: 'Waves' },
-  { name: 'Robotics & Automation', icon: 'Bot' },
-  { name: 'Manufacturing & Production', icon: 'Wrench' },
-  { name: 'Materials Science & Engineering', icon: 'Layers' },
-  { name: 'Renewable Energy Systems', icon: 'Leaf' },
-  { name: 'Automotive Engineering', icon: 'Car' }
 ];
 
 export const campusServices: { name: string; description: string; image: string; href?: string }[] = [

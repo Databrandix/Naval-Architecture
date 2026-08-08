@@ -2,12 +2,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getNotices, getPageHero } from '@/lib/identity';
 import NoticesClient from './NoticesClient';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Notice Board — Department of Electrical and Electronics Engineering',
-  description:
-    'Departmental notices and announcements — registration, holidays, transport, and student services.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Notice Board',
+    description:
+      'Departmental notices and announcements — registration, holidays, transport, and student services.',
+  });
+}
 
 export default async function NoticeBoardPage() {
   const [notices, hero] = await Promise.all([

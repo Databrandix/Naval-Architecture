@@ -3,12 +3,15 @@ import { Briefcase, Building2, Quote as QuoteIcon } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getVisitors, getPageHero } from '@/lib/identity';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Visitors — Department of Electrical and Electronics Engineering',
-  description:
-    'Distinguished visitors and guests of the Department of Mechanical Engineering, Sonargaon University.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Visitors',
+    description:
+      'Distinguished visitors and guests of the Department of Mechanical Engineering, Sonargaon University.',
+  });
+}
 
 // Defensive Json read — quote column is Prisma `Json` (string[]).
 function coerceParagraphs(v: unknown): string[] {

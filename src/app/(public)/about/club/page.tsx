@@ -6,12 +6,18 @@ import { getAboutDepartmentClub } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { DynamicLucideIcon } from '@/components/ui/DynamicLucideIcon';
 import JoinClubButton from './JoinClubButton';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'SU Electrical and Electronic Club — Department of Electrical and Electronics Engineering',
-  description:
-    'SU Electrical and Electronic Club (SUEEC) — building industry-ready engineers through field visits, workshops, seminars, project showcases and an active alumni network.',
-};
+export async function generateMetadata() {
+  /* The club names itself in its own row, so the title follows a rename
+     without anyone editing this file. */
+  const club = await getAboutDepartmentClub();
+
+  return departmentMetadata({
+    title: club?.heroTitle ?? 'Department Club',
+    description: `${club?.heroTitle ?? 'The student club'} of the {department} — seminars, workshops and training, research and technical projects, and professional networks in ship design and marine engineering.`,
+  });
+}
 
 // Phase 20 — activities[].iconName resolves via DynamicLucideIcon
 // against the full Lucide library; silent HelpCircle fallback on
@@ -112,7 +118,7 @@ export default async function AboutDepartmentClubPage() {
             <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[360px] md:h-[440px]">
               <Image
                 src={row.introImageUrl}
-                alt="SUEEC club members"
+                alt={`${row.heroTitle} members`}
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 className="object-cover"

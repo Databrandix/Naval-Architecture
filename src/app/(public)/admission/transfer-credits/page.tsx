@@ -3,12 +3,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getAdmissionTransferCredits, getPageHero } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Transfer Credits — Department of Electrical and Electronics Engineering',
-  description:
-    'Credit transfer policy at Sonargaon University — minimum grades, transfer limits, fees, and the documents required to apply.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Transfer Credits',
+    description:
+      'Credit transfer policy at Sonargaon University — minimum grades, transfer limits, fees, and the documents required to apply.',
+  });
+}
 
 // Phase 8c — DB-driven singleton. Fixed section icons + headings
 // ("Minimum Grade Policy", "Transfer Limits & Fees", "Required

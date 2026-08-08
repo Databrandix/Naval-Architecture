@@ -5,12 +5,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getNews, getNewsCount, getNewsLanding } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'News — Department of Electrical and Electronics Engineering',
-  description:
-    'Latest news from the Department of Mechanical Engineering, Sonargaon University — events, workshops, industrial visits, and academic milestones.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'News',
+    description:
+      'Latest news from the Department of Mechanical Engineering, Sonargaon University — events, workshops, industrial visits, and academic milestones.',
+  });
+}
 
 const FALLBACK_HERO_IMAGE = '/assets/site-school-1024x576.webp';
 const FALLBACK_HERO_TITLE = 'Latest News';

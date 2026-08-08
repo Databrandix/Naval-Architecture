@@ -3,12 +3,15 @@ import { Briefcase, GraduationCap, IdCard, UserCircle2 } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getAlumni, getPageHero } from '@/lib/identity';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Alumni — Department of Electrical and Electronics Engineering',
-  description:
-    'Notable alumni from the Department of Mechanical Engineering, Sonargaon University.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Alumni',
+    description:
+      'Notable alumni from the Department of Mechanical Engineering, Sonargaon University.',
+  });
+}
 
 export default async function AlumniPage() {
   const [alumni, hero] = await Promise.all([

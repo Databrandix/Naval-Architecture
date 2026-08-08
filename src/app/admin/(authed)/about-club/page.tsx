@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth-server';
 import AboutClubForm from './AboutClubForm';
 
-export const metadata = { title: 'About — SU Electrical and Electronic Club' };
+export const metadata = { title: 'Department Club' };
 
 export default async function AboutDepartmentClubPage() {
   const session = await getSession();
@@ -14,7 +14,7 @@ export default async function AboutDepartmentClubPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <header>
-        <h1 className="text-2xl font-display font-bold text-gray-900">About — SU Electrical and Electronic Club</h1>
+        <h1 className="text-2xl font-display font-bold text-gray-900">Department Club</h1>
         <p className="mt-1 text-sm text-gray-500">
           Hero, intro, stats, activities, and network section for <code className="font-mono">/about/club</code>.
         </p>

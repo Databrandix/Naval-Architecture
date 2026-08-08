@@ -4,12 +4,15 @@ import { DynamicLucideIcon } from '@/components/ui/DynamicLucideIcon';
 import NewsletterSubscribeForm from './NewsletterSubscribeForm';
 import { getNewsletterPage } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Newsletter — Department of Electrical and Electronics Engineering',
-  description:
-    'Subscribe to the Department of Mechanical Engineering newsletter for monthly updates on events, research, admissions, and student achievements.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Newsletter',
+    description:
+      'Subscribe to the Department of Mechanical Engineering newsletter for monthly updates on events, research, admissions, and student achievements.',
+  });
+}
 
 type AdvantageRow = {
   iconName: string;

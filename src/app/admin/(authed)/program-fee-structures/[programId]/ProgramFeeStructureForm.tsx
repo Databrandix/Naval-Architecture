@@ -59,7 +59,7 @@ export default function ProgramFeeStructureForm({
       <Card title="Intro">
         <TextField label="Intro overline pill" name="introOverline" required
                    defaultValue={initial?.introOverline ?? `${program.programName}`}
-                   placeholder="B.Sc. in Electrical and Electronics Engineering (EEE)" />
+                   placeholder="B.Sc. in Naval Architecture and Marine Engineering (NAME)" />
         <TextField label="Intro heading" name="introHeading" required
                    defaultValue={initial?.introHeading ?? 'Tuition Fee Structure'} />
         <TextAreaField label="Intro paragraph" name="introBody" required rows={3}

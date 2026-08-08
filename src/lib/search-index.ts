@@ -40,6 +40,7 @@ const staticPages: SearchItem[] = [
   { title: 'Mission & Vision', type: 'Page', href: '/about/mission-vision', description: "Department's mission and long-term vision" },
   { title: 'Laboratory Facility', type: 'Page', href: '/about/laboratory-facility', description: 'Departmental labs and equipment' },
   { title: 'Lab Facility', type: 'Page', href: '/about/lab-facility', description: 'List of all departmental labs' },
+  { title: 'Department Layout', type: 'Page', href: '/about/department-layout', description: 'Which office is on which level' },
   { title: 'SU NAME Club', type: 'Page', href: '/about/club', description: 'Student club of the Department of Naval Architecture and Marine Engineering' },
 
   // Faculty
@@ -61,6 +62,7 @@ const staticPages: SearchItem[] = [
   { title: 'Visitors', type: 'Page', href: '/student-society/visitor', description: 'Distinguished visitors and their quotes' },
   { title: 'Syllabus', type: 'Page', href: '/student-society/syllabus', description: 'Department syllabus and curriculum' },
   { title: 'Club List', type: 'Page', href: '/student-society/club-list', description: 'Student clubs and societies' },
+  { title: 'Service Charter', type: 'Page', href: '/student-society/service-charter', description: 'Registration, add and drop, results, transcripts — the steps and who to contact' },
 
   // Other
   { title: 'Research Publications', type: 'Page', href: '/research', description: 'Research papers and publications' },
@@ -323,7 +325,7 @@ export const getSearchIndex = cache(async (): Promise<SearchItem[]> => {
 
   // ProgramFeeStructure (Phase 8b — DB). Per-program fee entries.
   // introOverline carries the user-facing program label (e.g.
-  // "B.Sc. in Electrical and Electronics Engineering (EEE)"). All entries link to
+  // "B.Sc. in Naval Architecture and Marine Engineering (NAME)"). All entries link to
   // /admission/tuition-fees — programs render stacked there.
   const feeItems: SearchItem[] = feeStructureRows.map((f) => ({
     title: f.introOverline,

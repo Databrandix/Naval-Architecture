@@ -2,12 +2,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import LegalSections from '@/components/sections/LegalSections';
 import { getLegalPagesContent } from '@/lib/identity';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Terms & Conditions — Sonargaon University',
-  description:
-    'Terms & Conditions for the Department of Electrical and Electronics Engineering, Sonargaon University — site usage, consent, log files, and how we use your information.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Terms & Conditions — Sonargaon University',
+    description:
+      'Terms & Conditions for the {department}, Sonargaon University — site usage, consent, log files, and how we use your information.',
+  });
+}
 
 export default async function TermsAndConditionsPage() {
   const row = await getLegalPagesContent();

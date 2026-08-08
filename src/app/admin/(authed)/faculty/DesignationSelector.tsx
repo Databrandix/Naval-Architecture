@@ -43,7 +43,7 @@ export default function DesignationSelector({
 }: Props) {
   // Decide the starting mode based on whether the existing value
   // matches a preset. Existing rows with off-list values (e.g.
-  // "Head, Department of Electrical and Electronics Engineering") land in custom
+  // "Head, Department of Naval Architecture and Marine Engineering") land in custom
   // mode pre-populated so the admin sees what's there.
   const presetMatch = useMemo(
     () => (PRESET_DESIGNATIONS as readonly string[]).includes(initialValue),

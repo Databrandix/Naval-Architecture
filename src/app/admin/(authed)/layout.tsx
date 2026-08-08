@@ -61,6 +61,7 @@ export default async function AuthedAdminLayout({
           newSubmissionCount={newSubmissionCount}
           logoUrl={dept.logoUrl}
           logoAlt={`${uni.name} logo`}
+          departmentName={dept.name.replace(/^Department of\s+/i, '')}
         />
         <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-8 lg:p-10 max-w-screen-2xl pt-16 lg:pt-10">
           {children}

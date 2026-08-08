@@ -142,11 +142,13 @@ export default function Sidebar({
   newSubmissionCount,
   logoUrl,
   logoAlt,
+  departmentName,
 }: {
   user: SidebarUser;
   newSubmissionCount: number;
   logoUrl: string;
   logoAlt: string;
+  departmentName: string;
 }) {
   const pathname = usePathname();
   const isSuperAdmin = user.role === 'super_admin';
@@ -288,7 +290,7 @@ export default function Sidebar({
           Dept. of
         </div>
         <div className="text-base font-display font-bold text-primary mt-1 leading-tight">
-          Electrical and Electronics Engineering
+          {departmentName}
         </div>
       </div>
 

@@ -16,6 +16,8 @@ type NoticeRow = {
 };
 
 type Props = {
+  /** Named by the caller from the department identity. */
+  departmentName: string;
   notices: readonly NoticeRow[];
 };
 
@@ -25,7 +27,7 @@ function formatDate(row: NoticeRow): string {
   return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function NoticesSection({ notices }: Props) {
+export default function NoticesSection({ notices, departmentName }: Props) {
   if (notices.length === 0) return null;
 
   return (
@@ -40,7 +42,7 @@ export default function NoticesSection({ notices }: Props) {
             Academic Notices &amp; Announcements
           </h2>
           <p className="text-white/70 text-base md:text-lg">
-            Stay up to date with the latest from the Department of Electrical and Electronics Engineering — registration, holidays, and student services.
+            {`Stay up to date with the latest from the ${departmentName} — registration, holidays, and student services.`}
           </p>
         </div>
 

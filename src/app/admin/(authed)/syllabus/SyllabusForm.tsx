@@ -45,7 +45,7 @@ export default function SyllabusForm({ initial }: { initial: Syllabus | null }) 
         <TextField label="Title (full)" name="title" required defaultValue={initial?.title ?? ''} />
         <TextField label="Short title" name="shortTitle" required defaultValue={initial?.shortTitle ?? ''} />
         <TextField label="Department" name="department" required
-                   defaultValue={initial?.department ?? 'Electrical and Electronics Engineering'} />
+                   defaultValue={initial?.department ?? ''} />
         <TextAreaField label="Summary" name="summary" required rows={4}
                        defaultValue={initial?.summary ?? ''} />
       </Card>

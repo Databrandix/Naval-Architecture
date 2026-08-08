@@ -1,18 +1,22 @@
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
-import { getSyllabi, getPageHero } from '@/lib/identity';
+import { getSyllabi, getPageHero, getDepartmentIdentity } from '@/lib/identity';
 import SyllabusClient from './SyllabusClient';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Syllabus — Department of Electrical and Electronics Engineering',
-  description:
-    'Course-by-course syllabus for the Department of Electrical and Electronics Engineering, Sonargaon University.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Syllabus',
+    description:
+      'Course-by-course syllabus for the {department}, Sonargaon University.',
+  });
+}
 
 export default async function SyllabusPage() {
-  const [items, hero] = await Promise.all([
+  const [items, hero, dept] = await Promise.all([
     getSyllabi(),
     getPageHero('student-society-syllabus'),
+    getDepartmentIdentity(),
   ]);
 
   return (
@@ -27,11 +31,12 @@ export default async function SyllabusPage() {
       <Container>
         <div className="max-w-3xl mx-auto text-center mb-10 md:mb-12">
           <p className="text-base md:text-lg text-gray-700 leading-[1.85]">
-            Course-by-course syllabus for the Department of Electrical and Electronics Engineering. Download the official PDF for detailed credit distribution, course outcomes, and reference materials.
+            {`Course-by-course syllabus for the ${dept.name}. Download the official PDF for detailed credit distribution, course outcomes, and reference materials.`}
           </p>
         </div>
 
         <SyllabusClient
+          departmentName={dept.name.replace(/^Department of\s+/i, '')}
           items={items.map((s) => ({
             slug:       s.slug,
             title:      s.title,

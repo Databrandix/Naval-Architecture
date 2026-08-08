@@ -2,12 +2,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import GalleryGrid from '@/components/gallery/GalleryGrid';
 import { getGalleryImages, getPageHero } from '@/lib/identity';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Gallery — Department of Electrical and Electronics Engineering',
-  description:
-    'Campus life moments from the Department of Mechanical Engineering, Sonargaon University.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Gallery',
+    description:
+      'Campus life moments from the Department of Mechanical Engineering, Sonargaon University.',
+  });
+}
 
 export default async function GalleryPage() {
   const [images, hero] = await Promise.all([

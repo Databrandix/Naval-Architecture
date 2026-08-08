@@ -3,12 +3,15 @@ import Container from '@/components/ui/Container';
 import { getLabFacilityLanding, getLabs } from '@/lib/identity';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import LabFacilityClient from './LabFacilityClient';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Lab Facilities — Department of Electrical and Electronics Engineering',
-  description:
-    'Departmental laboratories at Sonargaon University ME — manufacturing, ICE, applied mechanics, fluid mechanics, CFD, material testing, and more.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Lab Facilities',
+    description:
+      'Departmental laboratories at Sonargaon University ME — manufacturing, ICE, applied mechanics, fluid mechanics, CFD, material testing, and more.',
+  });
+}
 
 export default async function LabFacilityPage() {
   const [landing, labs] = await Promise.all([

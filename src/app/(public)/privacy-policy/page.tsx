@@ -2,12 +2,15 @@ import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import LegalSections from '@/components/sections/LegalSections';
 import { getLegalPagesContent } from '@/lib/identity';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Privacy Policy — Sonargaon University',
-  description:
-    'Privacy Policy for the Department of Electrical and Electronics Engineering, Sonargaon University — how we handle visitor information and respect your consent.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Privacy Policy — Sonargaon University',
+    description:
+      'Privacy Policy for the {department}, Sonargaon University — how we handle visitor information and respect your consent.',
+  });
+}
 
 export default async function PrivacyPolicyPage() {
   const row = await getLegalPagesContent();

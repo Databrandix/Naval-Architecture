@@ -18,7 +18,14 @@ export type SyllabusCardRow = {
 
 const FILTERS = ['All', 'Undergraduate', 'Postgraduate'] as const;
 
-export default function SyllabusClient({ items }: { items: readonly SyllabusCardRow[] }) {
+export default function SyllabusClient({
+  items,
+  departmentName,
+}: {
+  items: readonly SyllabusCardRow[];
+  /** Named by the caller from the department identity, so a copy of this site does not offer another department's postgraduate programmes. */
+  departmentName: string;
+}) {
   const [query, setQuery] = useState('');
   const [active, setActive] = useState<(typeof FILTERS)[number]>('All');
 
@@ -83,7 +90,7 @@ export default function SyllabusClient({ items }: { items: readonly SyllabusCard
                 Postgraduate syllabus coming soon
               </p>
               <p className="text-gray-500 text-sm">
-                Postgraduate programs in Electrical and Electronics Engineering are not offered yet. Please check back later for updates.
+                {`Postgraduate programmes in ${departmentName} are not offered yet. Please check back later for updates.`}
               </p>
             </>
           ) : (

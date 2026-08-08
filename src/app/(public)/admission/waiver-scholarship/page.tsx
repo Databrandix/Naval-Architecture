@@ -8,12 +8,15 @@ import {
   getPageHero,
 } from '@/lib/identity';
 import { DynamicLucideIcon } from '@/components/ui/DynamicLucideIcon';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Waiver & Scholarship — Department of Electrical and Electronics Engineering',
-  description:
-    'Tuition waivers and merit scholarships at Sonargaon University — eligibility, percentages, and how they apply.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Waiver & Scholarship',
+    description:
+      'Tuition waivers and merit scholarships at Sonargaon University — eligibility, percentages, and how they apply.',
+  });
+}
 
 // Phase 20 — WaiverCategory.iconName resolves via DynamicLucideIcon
 // against the full Lucide library; silent HelpCircle fallback on

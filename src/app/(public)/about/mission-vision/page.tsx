@@ -2,12 +2,15 @@ import { Eye, Target } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getAboutMissionVision } from '@/lib/identity';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Mission & Vision — Department of Electrical and Electronics Engineering',
-  description:
-    'The mission and vision of the Department of Mechanical Engineering, Sonargaon University.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Mission & Vision',
+    description:
+      'The mission and vision of the Department of Mechanical Engineering, Sonargaon University.',
+  });
+}
 
 export default async function MissionVisionPage() {
   const row = await getAboutMissionVision();

@@ -4,12 +4,15 @@ import type { Faculty } from '@prisma/client';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getFacultyList, getPageHero } from '@/lib/identity';
+import { departmentMetadata } from '@/lib/page-metadata';
 
-export const metadata = {
-  title: 'Faculty Members — Department of Electrical and Electronics Engineering',
-  description:
-    'Faculty members of the Department of Mechanical Engineering, Sonargaon University — Dean, Head of Department, full-time and part-time faculty.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Faculty Members',
+    description:
+      'Faculty members of the Department of Mechanical Engineering, Sonargaon University — Dean, Head of Department, full-time and part-time faculty.',
+  });
+}
 
 const initialsOf = (name: string) =>
   name

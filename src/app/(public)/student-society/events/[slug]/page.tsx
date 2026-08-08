@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
-import { getEventBySlug, getEventSlugs } from '@/lib/identity';
+import { getDepartmentIdentity, getEventBySlug, getEventSlugs } from '@/lib/identity';
 
 export async function generateStaticParams() {
   const slugs = await getEventSlugs();
@@ -25,10 +25,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const ev = await getEventBySlug(slug);
   if (!ev) return { title: 'Event not found' };
-  return {
-    title: `${ev.shortTitle} — Department of Electrical and Electronics Engineering`,
-    description: ev.summary,
-  };
+  /* The root layout's template already appends the university and department,
+     so the event name alone is the title. */
+  return { title: ev.shortTitle, description: ev.summary };
 }
 
 const CATEGORY_STYLES: Record<string, string> = {
@@ -68,7 +67,7 @@ export default async function EventDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const ev = await getEventBySlug(slug);
+  const [ev, dept] = await Promise.all([getEventBySlug(slug), getDepartmentIdentity()]);
   if (!ev) notFound();
 
   const description = coerceParagraphs(ev.description);
@@ -118,7 +117,11 @@ export default async function EventDetailPage({
             <h3 className="font-display text-xl font-bold text-primary mb-5">Event Details</h3>
 
             <div className="space-y-5">
-              <DetailRow Icon={Building2} label="Department" value="Electrical and Electronics Engineering" />
+              <DetailRow
+                Icon={Building2}
+                label="Department"
+                value={dept.name.replace(/^Department of\s+/i, '')}
+              />
               {dateLabel && <DetailRow Icon={Calendar} label="Date" value={dateLabel} />}
               {ev.time && <DetailRow Icon={Clock} label="Time" value={ev.time} />}
               {ev.venue && <DetailRow Icon={MapPin} label="Venue" value={ev.venue} />}
@@ -140,7 +143,7 @@ export default async function EventDetailPage({
               <DetailRow
                 Icon={GraduationCap}
                 label="Faculty"
-                value="Faculty of Science & Engineering"
+                value={dept.facultyName}
               />
             </div>
           </aside>

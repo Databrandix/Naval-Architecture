@@ -15,10 +15,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const article = await getNewsBySlug(slug);
   if (!article) return { title: 'News article not found' };
-  return {
-    title: `${article.shortTitle} — Department of Electrical and Electronics Engineering`,
-    description: article.summary,
-  };
+  /* The root layout's template already appends the university and department,
+     so the headline alone is the title. */
+  return { title: article.shortTitle, description: article.summary };
 }
 
 // Defensive Json reads — the body / meta columns are typed `Json`

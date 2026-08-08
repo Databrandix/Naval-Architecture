@@ -34,7 +34,7 @@ export default function AlumniForm({ initial }: { initial: Alumni | null }) {
         </div>
         <TextField label="Name" name="name" required defaultValue={initial?.name ?? ''} />
         <TextField label="Department" name="department" required
-                   defaultValue={initial?.department ?? 'Electrical and Electronics Engineering'} />
+                   defaultValue={initial?.department ?? ''} />
         <TextField label="Designation" name="designation" required defaultValue={initial?.designation ?? ''} />
         <TextField label="Company / Organisation" name="company" required defaultValue={initial?.company ?? ''} />
       </Card>

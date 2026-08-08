@@ -3,17 +3,20 @@ import { notFound } from 'next/navigation';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import MessageParagraphs from '@/components/sections/MessageParagraphs';
+import { departmentMetadata } from '@/lib/page-metadata';
 import {
   getHead,
   getDepartmentIdentity,
   getUniversityIdentity,
 } from '@/lib/identity';
 
-export const metadata = {
-  title: 'Message from Head — Department of Electrical and Electronics Engineering',
-  description:
-    'Welcome message from the Head of the Department of Mechanical Engineering, Sonargaon University.',
-};
+export async function generateMetadata() {
+  return departmentMetadata({
+    title: 'Message from Head',
+    description:
+      'Welcome message from the Head of the Department of Mechanical Engineering, Sonargaon University.',
+  });
+}
 
 const FALLBACK_HERO = '/assets/message-from-head-hero.webp';
 
