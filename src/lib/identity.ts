@@ -233,6 +233,12 @@ export const getLaboratoryLabs = cache(async () => {
       keyLabel: true,
       keyItems: true,
       focus: true,
+      location: true,
+      capacity: true,
+      equipmentCount: true,
+      software: true,
+      inCharge: true,
+      safety: true,
     },
   });
 });

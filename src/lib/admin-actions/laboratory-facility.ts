@@ -115,6 +115,15 @@ function readLab2Row(formData: FormData) {
     keyLabel:    getStr(formData, 'keyLabel'),
     keyItems:    getStr(formData, 'keyItems'),
     focus:       getStr(formData, 'focus'),
+
+    /* Empty means absent, not an empty string: the card drops a field it has
+       no value for, and "" would leave a heading with a blank line under it. */
+    location:       emptyToNull(formData.get('location')),
+    capacity:       emptyToNull(formData.get('capacity')),
+    equipmentCount: emptyToNull(formData.get('equipmentCount')),
+    software:       emptyToNull(formData.get('software')),
+    inCharge:       emptyToNull(formData.get('inCharge')),
+    safety:         emptyToNull(formData.get('safety')),
   };
 }
 

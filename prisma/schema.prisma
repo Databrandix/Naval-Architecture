@@ -616,6 +616,17 @@ model LaboratoryLab {
   keyItems     String   @db.Text
   focus        String   @db.Text
   displayOrder Int
+
+  /// The rest of what a department's Laboratory Information sheet records
+  /// about a room. All optional: a department that does not track a figure
+  /// leaves it blank and the card drops that line, rather than showing a
+  /// label with nothing beside it.
+  location       String? // "Underground", "Room 402"
+  capacity       String? // students at one sitting
+  equipmentCount String? // as the department counts it, which is sometimes "40+"
+  software       String? @db.Text
+  inCharge       String? @db.Text // names, roles and phone numbers, one per line
+  safety         String? @db.Text
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

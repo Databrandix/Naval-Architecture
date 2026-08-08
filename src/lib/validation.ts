@@ -444,6 +444,15 @@ export const laboratoryLabCreateSchema = z.object({
   keyItems:     z.string().min(1),
   focus:        z.string().min(1),
   displayOrder: z.number().int().min(0).optional(),
+
+  /* Room details. Nullable rather than optional: the form always submits these
+     fields, and an emptied one has to clear the column rather than be ignored. */
+  location:       z.string().max(200).nullable(),
+  capacity:       z.string().max(100).nullable(),
+  equipmentCount: z.string().max(100).nullable(),
+  software:       z.string().nullable(),
+  inCharge:       z.string().nullable(),
+  safety:         z.string().nullable(),
 });
 
 export const laboratoryLabUpdateSchema = laboratoryLabCreateSchema.partial();

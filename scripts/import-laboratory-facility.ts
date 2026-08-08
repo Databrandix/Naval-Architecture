@@ -1,27 +1,94 @@
 /**
  * The Laboratory Facility page.
  *
- *   npx tsx --env-file=.env scripts/import-laboratory-facility.ts
+ *   npx tsx --env-file=.env scripts/import-laboratory-facility.ts <xlsx path>
  *
- * This page is not a second list of the same rooms. /about/lab-facility is the
- * rooms — where they are, how many they seat, what they look like.
- * /about/laboratory-facility is what the department can actually do in them,
- * grouped by capability, which is what somebody deciding whether to study here
- * is asking.
+ * One card per laboratory, carrying everything the department's Laboratory
+ * Information spreadsheet records: what the room is for, its equipment and
+ * software, the courses it serves, where it is, how many it seats, who staffs
+ * it and how it is kept safe.
  *
- * The groups below are the eight laboratories rearranged: every piece of
- * equipment named here comes from the department's Laboratory Information
- * spreadsheet, and the courses each group supports are the ones that
- * spreadsheet lists against those rooms.
+ * This is the detail page. /about/lab-facility is the same rooms with their
+ * photographs and a short description — someone looking at pictures. Here they
+ * are reading specifications, so nothing from the sheet is left out.
  *
- * Safe to run again: it replaces the groups and rewrites the landing copy.
+ * Safe to run again: it replaces every card and rewrites the landing copy.
  */
+import { readFileSync } from 'node:fs';
 import { PrismaClient } from '@prisma/client';
+import * as XLSX from 'xlsx';
+
+const [, , xlsxPath] = process.argv;
+if (!xlsxPath) {
+  console.error('usage: npx tsx --env-file=.env scripts/import-laboratory-facility.ts <xlsx path>');
+  process.exit(1);
+}
 
 const prisma = new PrismaClient();
 
+const COLUMN = {
+  name: 'Laboratory Name',
+  purpose: 'Purpose / Function',
+  equipment: 'Major Equipment',
+  software: 'Software (If any)',
+  count: 'Number of Equipment',
+  capacity: 'Lab Capacity (Students)',
+  courses: 'Courses Supported',
+  room: 'Location / Room No',
+  inCharge: 'Lab In-Charge',
+  safety: 'Safety Facilities',
+} as const;
+
+/**
+ * A Lucide icon per laboratory, matched on what the room does. Falls back to a
+ * flask for a laboratory this list has not seen — a department with a room
+ * called something else gets a generic icon, not a broken one.
+ */
+const ICONS: { pattern: RegExp; icon: string }[] = [
+  { pattern: /machine tool|workshop|machining/i, icon: 'Wrench' },
+  { pattern: /weld/i, icon: 'Flame' },
+  { pattern: /solid mechanic|structure|strength/i, icon: 'Gauge' },
+  { pattern: /material|metall/i, icon: 'Layers' },
+  { pattern: /fluid machinery|hydraulic machine|pump|turbine/i, icon: 'Cog' },
+  { pattern: /fluid mechanic|hydraulic/i, icon: 'Waves' },
+  { pattern: /heat engine|engine|combustion/i, icon: 'Gauge' },
+  { pattern: /heat transfer|thermal|thermo/i, icon: 'Thermometer' },
+  { pattern: /ship design|drawing|cad/i, icon: 'PenTool' },
+];
+
+const iconFor = (name: string): string =>
+  ICONS.find(({ pattern }) => pattern.test(name))?.icon ?? 'FlaskConical';
+
+const text = (v: unknown): string => String(v ?? '').replace(/\r/g, '').trim();
+
+/** Turn "A; B; C." into "A, B and C" — a sentence, not a machine's list. */
+function sentenceList(value: string): string {
+  const parts = value
+    .split(/;\s*/)
+    .map((s) => s.trim().replace(/\.$/, ''))
+    .filter(Boolean);
+  if (parts.length === 0) return '';
+  if (parts.length === 1) return parts[0];
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+}
+
+/**
+ * The in-charge cell is a small block: a name, a role, a phone number, an
+ * ampersand, then the next person. Kept as lines so the card can show it as
+ * written, with the department's own misspelling of "Officer" corrected —
+ * it appears on every row and would be read as the site's mistake, not theirs.
+ */
+function tidyInCharge(value: string): string {
+  return text(value)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.replace(/\bOffier\b/g, 'Officer'))
+    .join('\n');
+}
+
 const INTRO =
-  'Ship design is taught at a desk and learned at a machine. The department’s laboratories run the length of the discipline — cutting and welding steel, loading it until it fails, measuring how water moves around a hull, and taking an engine apart to see why it turns. Every course with a sessional attached is taught in one of these rooms, and the equipment listed below is what a student actually puts their hands on.';
+  'Ship design is taught at a desk and learned at a machine. The department’s laboratories run the length of the discipline — cutting and welding steel, loading it until it fails, measuring how water moves around a hull, and taking an engine apart to see why it turns. Every course with a sessional attached is taught in one of these rooms, and what follows is what each of them holds.';
 
 const FEATURES = [
   {
@@ -43,68 +110,14 @@ const FEATURES = [
       'Every laboratory is staffed by a lab officer and an attendant, and workshop sessions run under protective equipment.',
   },
 ];
-/* Three, not four: the page lays features out in three columns, and a fourth
-   would sit alone on a row of its own. */
-
-/**
- * keyLabel differs by group on purpose: a machine shop is described by its
- * tools, a fluids laboratory by its apparatus, and a materials laboratory by
- * the tests it can run. Calling all three "Key Equipment" would flatten the
- * difference.
- */
-const GROUPS = [
-  {
-    iconName: 'Wrench',
-    title: 'Machining and Fabrication',
-    description:
-      'The machine shop and welding bay, where a drawing first becomes metal. Students turn, mill, grind and cut stock, then join it by arc, spot, gas and argon welding — the same processes a shipyard uses on a hull.',
-    keyLabel: 'Key Equipment',
-    keyItems:
-      'Lathe, shaper and milling machines; pedestal drill and grinders; mechanical power saw; electric arc, spot, gas and argon welding sets; full hand-tool and measurement kit including vernier calipers and micrometers.',
-    focus: 'Workshop Practice, manufacturing, fabrication and production courses.',
-  },
-  {
-    iconName: 'Gauge',
-    title: 'Structures and Materials',
-    description:
-      'Where materials are loaded until they give way. Tension, compression, hardness, impact and beam tests establish the properties a ship structure is designed against, and the induction furnace supports work on the metals themselves.',
-    keyLabel: 'Key Tests',
-    keyItems:
-      'Universal Testing Machine; slenderness column and helical spring testing machines; impact and Rockwell hardness testers; beam and I-section testing machine; electric induction furnace, incubator and oven.',
-    focus: 'Solid Mechanics, Mechanics of Structures, Engineering Materials and Ship Structures.',
-  },
-  {
-    iconName: 'Waves',
-    title: 'Fluid Mechanics and Hydraulics',
-    description:
-      'The behaviour of water, measured rather than assumed. Flow over weirs and through channels, pressure on submerged surfaces, friction in pipes and the Bernoulli relation are all demonstrated on the bench before they appear in a resistance calculation.',
-    keyLabel: 'Key Apparatus',
-    keyItems:
-      'Hydraulic bench; open channel hydraulic flume; V-notch channel and sharp-crested weir; centre of pressure apparatus; Bernoulli theorem apparatus; fluid friction, orifice and mouthpiece apparatus.',
-    focus: 'Fluid Mechanics, Hydraulics and Marine Hydrodynamics.',
-  },
-  {
-    iconName: 'Cog',
-    title: 'Fluid Machinery',
-    description:
-      'Turbines and pumps under test — the machines that move water and the machines water moves, which between them cover most of what runs below deck.',
-    keyLabel: 'Key Equipment',
-    keyItems: 'Pelton wheel; gear pump.',
-    focus: 'Fluid Machinery and Hydraulic Machines.',
-  },
-  {
-    iconName: 'Flame',
-    title: 'Marine Engines and Heat Transfer',
-    description:
-      'Diesel and spark-ignition engines opened up and put on a dynamometer, alongside apparatus for conduction, forced convection and flow over surfaces. This is the ground under Marine Engineering I, II and III.',
-    keyLabel: 'Key Equipment',
-    keyItems:
-      'Six-cylinder and single-cylinder diesel engines; four-cylinder SI engine; engine testing dynamometer; four-stroke cylinder block and flywheel; heat conduction, water-to-water conduction and forced convection apparatus; wind tunnel.',
-    focus: 'Heat Engines, Internal Combustion Engines, Thermodynamics and Heat Transfer.',
-  },
-];
 
 async function main() {
+  const workbook = XLSX.read(readFileSync(xlsxPath));
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+    workbook.Sheets['Laboratory_Information'],
+    { defval: '' },
+  );
+
   const landing = await prisma.laboratoryFacilityLanding.update({
     where: { id: 'singleton' },
     data: {
@@ -116,18 +129,56 @@ async function main() {
       features: FEATURES,
     },
   });
-  console.log('landing :', landing.heroTitle, '·', FEATURES.length, 'features');
+  console.log('landing :', landing.heroTitle, '·', FEATURES.length, 'features\n');
 
-  /* Replaced wholesale rather than upserted: the groups have no stable key of
-     their own, and a half-updated set would read as a department that owns
-     five laboratories and describes three. */
+  /* Replaced wholesale: these cards have no key of their own beyond their
+     order, so a partial update would leave the page describing a mixture of
+     two spreadsheets. */
   await prisma.laboratoryLab.deleteMany();
-  await prisma.laboratoryLab.createMany({
-    data: GROUPS.map((group, index) => ({ ...group, displayOrder: index + 1 })),
-  });
 
-  for (const group of GROUPS) console.log('  ·', group.title);
-  console.log(`\n${GROUPS.length} capability groups`);
+  let order = 0;
+
+  for (const row of rows) {
+    const name = text(row[COLUMN.name]);
+    if (!name) continue;
+    order += 1;
+
+    const equipment = sentenceList(text(row[COLUMN.equipment]));
+    const software = sentenceList(text(row[COLUMN.software]));
+    const courses = sentenceList(text(row[COLUMN.courses]));
+
+    await prisma.laboratoryLab.create({
+      data: {
+        iconName: iconFor(name),
+        title: name,
+        description: text(row[COLUMN.purpose]),
+        keyLabel: 'Key Equipment',
+        keyItems: equipment || '—',
+        focus: courses || '—',
+        displayOrder: order,
+        location: text(row[COLUMN.room]) || null,
+        capacity: text(row[COLUMN.capacity]) || null,
+        equipmentCount: text(row[COLUMN.count]) || null,
+        software: software || null,
+        inCharge: tidyInCharge(text(row[COLUMN.inCharge])) || null,
+        safety: text(row[COLUMN.safety]) || null,
+      },
+    });
+
+    const has = [
+      text(row[COLUMN.room]) && 'location',
+      text(row[COLUMN.capacity]) && 'capacity',
+      text(row[COLUMN.count]) && 'count',
+      software && 'software',
+      text(row[COLUMN.inCharge]) && 'in-charge',
+      text(row[COLUMN.safety]) && 'safety',
+    ].filter(Boolean);
+
+    console.log(`${String(order).padStart(2)}. ${name}`);
+    console.log(`    ${has.join(' · ') || 'no extra detail'}`);
+  }
+
+  console.log(`\n${order} laboratories`);
 }
 
 main()

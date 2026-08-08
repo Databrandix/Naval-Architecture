@@ -90,6 +90,27 @@ export default async function LaboratoryFacilityPage() {
 
                     <p className="text-sm text-gray-600 leading-relaxed mb-5">{lab.description}</p>
 
+                    {/* Room, seats and equipment count: the three figures
+                        somebody scans for, so they sit above the prose. */}
+                    {(lab.location || lab.capacity || lab.equipmentCount) && (
+                      <dl className="mb-5 grid grid-cols-3 gap-2 rounded-lg bg-gray-50 p-3 text-center">
+                        {[
+                          { label: 'Location', value: lab.location },
+                          { label: 'Capacity', value: lab.capacity ? `${lab.capacity} students` : null },
+                          { label: 'Equipment', value: lab.equipmentCount },
+                        ]
+                          .filter((f) => f.value)
+                          .map((f) => (
+                            <div key={f.label}>
+                              <dt className="text-[9px] font-semibold uppercase tracking-[0.12em] text-gray-400">
+                                {f.label}
+                              </dt>
+                              <dd className="mt-0.5 text-[13px] font-semibold text-primary">{f.value}</dd>
+                            </div>
+                          ))}
+                      </dl>
+                    )}
+
                     <div className="space-y-3 text-sm">
                       <div>
                         <span className="font-semibold text-primary text-[10px] uppercase tracking-[0.15em]">
@@ -97,12 +118,45 @@ export default async function LaboratoryFacilityPage() {
                         </span>
                         <p className="text-gray-700 mt-1 leading-relaxed">{lab.keyItems}</p>
                       </div>
+
+                      {lab.software && (
+                        <div className="pt-3 border-t border-gray-100">
+                          <span className="font-semibold text-primary text-[10px] uppercase tracking-[0.15em]">
+                            Software
+                          </span>
+                          <p className="text-gray-700 mt-1 leading-relaxed">{lab.software}</p>
+                        </div>
+                      )}
+
                       <div className="pt-3 border-t border-gray-100">
                         <span className="font-semibold text-accent text-[10px] uppercase tracking-[0.15em]">
                           Learning Focus
                         </span>
                         <p className="text-gray-700 mt-1 leading-relaxed">{lab.focus}</p>
                       </div>
+
+                      {lab.inCharge && (
+                        <div className="pt-3 border-t border-gray-100">
+                          <span className="font-semibold text-primary text-[10px] uppercase tracking-[0.15em]">
+                            Lab In-Charge
+                          </span>
+                          {/* The department writes these as a small block — name,
+                              role, phone, then the next person — so the line
+                              breaks it was written with are kept. */}
+                          <p className="text-gray-700 mt-1 leading-relaxed whitespace-pre-line">
+                            {lab.inCharge}
+                          </p>
+                        </div>
+                      )}
+
+                      {lab.safety && (
+                        <div className="pt-3 border-t border-gray-100">
+                          <span className="font-semibold text-primary text-[10px] uppercase tracking-[0.15em]">
+                            Safety
+                          </span>
+                          <p className="text-gray-700 mt-1 leading-relaxed">{lab.safety}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </article>

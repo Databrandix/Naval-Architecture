@@ -63,6 +63,29 @@ export default function LaboratoryLabForm({ initial }: { initial: LaboratoryLab 
                        defaultValue={initial?.keyItems ?? ''} />
         <TextAreaField label="Learning Focus" name="focus" required rows={2}
                        defaultValue={initial?.focus ?? ''} />
+        <TextAreaField label="Software (optional)" name="software" rows={2}
+                       defaultValue={initial?.software ?? ''} />
+      </Card>
+
+      <Card title="Room details">
+        <p className="text-xs text-gray-500 -mt-2">
+          All optional. A field left empty is left off the card rather than shown with nothing beside it.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <TextField label="Location" name="location"
+                     defaultValue={initial?.location ?? ''}
+                     placeholder="Underground, Room 402" />
+          <TextField label="Capacity (students)" name="capacity"
+                     defaultValue={initial?.capacity ?? ''}
+                     placeholder="25" />
+          <TextField label="Number of equipment" name="equipmentCount"
+                     defaultValue={initial?.equipmentCount ?? ''}
+                     placeholder="12" />
+        </div>
+        <TextAreaField label="Lab in-charge (one person per line)" name="inCharge" rows={4}
+                       defaultValue={initial?.inCharge ?? ''} />
+        <TextAreaField label="Safety facilities" name="safety" rows={2}
+                       defaultValue={initial?.safety ?? ''} />
       </Card>
 
       {state.ok === false && (
