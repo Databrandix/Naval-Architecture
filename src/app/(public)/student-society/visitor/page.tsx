@@ -2,14 +2,14 @@ import Image from 'next/image';
 import { Briefcase, Building2, Quote as QuoteIcon } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
-import { getVisitors, getPageHero } from '@/lib/identity';
+import { getVisitors, getDepartmentIdentity, getPageHero } from '@/lib/identity';
 import { departmentMetadata } from '@/lib/page-metadata';
 
 export async function generateMetadata() {
   return departmentMetadata({
     title: 'Visitors',
     description:
-      'Distinguished visitors and guests of the Department of Mechanical Engineering, Sonargaon University.',
+      'Distinguished visitors and guests of the {department}, Sonargaon University.',
   });
 }
 
@@ -20,9 +20,10 @@ function coerceParagraphs(v: unknown): string[] {
 }
 
 export default async function VisitorsPage() {
-  const [visitors, hero] = await Promise.all([
+  const [visitors, hero, dept] = await Promise.all([
     getVisitors(),
     getPageHero('student-society-visitor'),
+    getDepartmentIdentity(),
   ]);
 
   return (
@@ -37,9 +38,8 @@ export default async function VisitorsPage() {
       <Container>
         <div className="mx-auto max-w-3xl text-center mb-10 md:mb-14">
           <p className="text-base md:text-lg text-gray-700 leading-[1.85]">
-            Distinguished guests, industry leaders, and visiting academics who
-            have shared their experience with the Department of Mechanical
-            Engineering at Sonargaon University.
+            Distinguished guests, industry leaders, and visiting academics who have shared their
+            experience with the {dept.name} at Sonargaon University.
           </p>
         </div>
 

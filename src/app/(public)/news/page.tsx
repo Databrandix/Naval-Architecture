@@ -11,7 +11,7 @@ export async function generateMetadata() {
   return departmentMetadata({
     title: 'News',
     description:
-      'Latest news from the Department of Mechanical Engineering, Sonargaon University — events, workshops, industrial visits, and academic milestones.',
+      'Latest news from the {department}, Sonargaon University — events, workshops, industrial visits, and academic milestones.',
   });
 }
 

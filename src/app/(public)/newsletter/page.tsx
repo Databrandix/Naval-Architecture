@@ -10,7 +10,7 @@ export async function generateMetadata() {
   return departmentMetadata({
     title: 'Newsletter',
     description:
-      'Subscribe to the Department of Mechanical Engineering newsletter for monthly updates on events, research, admissions, and student achievements.',
+      'Subscribe to the {department} newsletter for monthly updates on events, research, admissions, and student achievements.',
   });
 }
 

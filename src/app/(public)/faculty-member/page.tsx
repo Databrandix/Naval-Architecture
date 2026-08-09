@@ -10,7 +10,7 @@ export async function generateMetadata() {
   return departmentMetadata({
     title: 'Faculty Members',
     description:
-      'Faculty members of the Department of Mechanical Engineering, Sonargaon University — Dean, Head of Department, full-time and part-time faculty.',
+      'Faculty members of the {department}, Sonargaon University — Dean, Head of Department, full-time and part-time faculty.',
   });
 }
 

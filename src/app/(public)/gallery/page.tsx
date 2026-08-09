@@ -8,7 +8,7 @@ export async function generateMetadata() {
   return departmentMetadata({
     title: 'Gallery',
     description:
-      'Campus life moments from the Department of Mechanical Engineering, Sonargaon University.',
+      'Campus life moments from the {department}, Sonargaon University.',
   });
 }
 

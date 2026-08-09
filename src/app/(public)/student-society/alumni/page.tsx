@@ -9,7 +9,7 @@ export async function generateMetadata() {
   return departmentMetadata({
     title: 'Alumni',
     description:
-      'Notable alumni from the Department of Mechanical Engineering, Sonargaon University.',
+      'Notable alumni from the {department}, Sonargaon University.',
   });
 }
 

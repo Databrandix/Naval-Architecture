@@ -8,7 +8,7 @@ export async function generateMetadata() {
   return departmentMetadata({
     title: 'Mission & Vision',
     description:
-      'The mission and vision of the Department of Mechanical Engineering, Sonargaon University.',
+      'The mission and vision of the {department}, Sonargaon University.',
   });
 }
 

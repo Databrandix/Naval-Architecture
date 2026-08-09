@@ -8,7 +8,7 @@ export async function generateMetadata() {
   return departmentMetadata({
     title: 'Overview',
     description:
-      'Overview of the Department of Mechanical Engineering — programs, vision, and the scope of mechanical engineering as a discipline and a career.',
+      'Overview of the {department} — programs, vision, and the scope of the discipline as a career.',
   });
 }
 

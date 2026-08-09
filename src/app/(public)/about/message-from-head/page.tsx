@@ -14,7 +14,7 @@ export async function generateMetadata() {
   return departmentMetadata({
     title: 'Message from Head',
     description:
-      'Welcome message from the Head of the Department of Mechanical Engineering, Sonargaon University.',
+      'Welcome message from the Head of the {department}, Sonargaon University.',
   });
 }
 
