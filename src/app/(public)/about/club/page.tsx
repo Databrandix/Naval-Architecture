@@ -101,8 +101,12 @@ export default async function AboutDepartmentClubPage() {
             {stats.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-8 border-t border-gray-200">
                 {stats.map(({ value, label }) => (
-                  <div key={label}>
-                    <div className="text-2xl md:text-3xl font-display font-bold text-primary">
+                  /* The values are usually a number and occasionally a word. A
+                     value that wraps used to push its own label out of line
+                     with the others; the cells are equal-height columns now,
+                     with the labels pinned to the bottom. */
+                  <div key={label} className="flex h-full flex-col justify-between">
+                    <div className="text-2xl md:text-3xl font-display font-bold text-primary leading-tight text-balance">
                       {value}
                     </div>
                     <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mt-1">
