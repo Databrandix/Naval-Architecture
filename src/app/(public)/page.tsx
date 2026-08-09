@@ -80,7 +80,10 @@ export default async function HomePage() {
       <OverviewSection
         heading={dept.name}
         body={overview?.paragraphs[0] ?? ''}
-        imageAlt={overview?.heroTitle ?? dept.name}
+        /* The bundled picture is the fallback for a database that has not had
+           one uploaded yet — a new department site should still render. */
+        imageUrl={overview?.homeImageUrl ?? '/assets/homeimg.webp'}
+        imageAlt={`Students of the ${dept.name}, Sonargaon University`}
       />
       <ProgramsSection programs={programs} />
       <QuickLinksSection />

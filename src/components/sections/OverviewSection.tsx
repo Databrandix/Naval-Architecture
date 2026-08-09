@@ -13,10 +13,12 @@ import Container from '../ui/Container';
 export default function OverviewSection({
   heading,
   body,
+  imageUrl,
   imageAlt,
 }: {
   heading: string;
   body: string;
+  imageUrl: string;
   imageAlt: string;
 }) {
   return (
@@ -65,7 +67,7 @@ export default function OverviewSection({
             className="order-1 lg:order-2 overflow-hidden"
           >
             <Image
-              src="/assets/homeimg.webp"
+              src={imageUrl}
               alt={imageAlt}
               width={1600}
               height={900}

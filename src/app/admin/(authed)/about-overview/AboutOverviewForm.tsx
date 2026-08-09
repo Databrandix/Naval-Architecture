@@ -41,6 +41,10 @@ export default function AboutOverviewForm({ initial }: { initial: AboutOverview 
           name="heroImageVerticalPercent"
           initialValue={initial?.heroImageVerticalPercent}
         />
+        <ImageUploader kind="about-image" name="homeImage" aspectRatio="wide"
+                       label="Homepage picture — shown beside the first paragraph on the front page"
+                       initialUrl={initial?.homeImageUrl ?? undefined}
+                       initialPublicId={initial?.homeImagePublicId ?? undefined} />
       </Card>
 
       <Card title="Paragraphs">

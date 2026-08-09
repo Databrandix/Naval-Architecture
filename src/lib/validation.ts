@@ -356,6 +356,9 @@ export const aboutOverviewUpdateSchema = z.object({
   heroImageUrl:      z.string().min(1),
   heroImagePublicId: optionalNullableString,
   heroImageVerticalPercent: z.coerce.number().int().min(0).max(100).default(50),
+  /* The picture beside the overview text on the homepage, not this page's hero. */
+  homeImageUrl:      optionalNullableString,
+  homeImagePublicId: optionalNullableString,
   paragraphs:        z.array(z.string()).default([]),
 });
 

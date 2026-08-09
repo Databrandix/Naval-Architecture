@@ -41,6 +41,8 @@ export async function updateAboutOverviewAction(
     heroImageUrl:      getStr(formData, 'heroImageUrl'),
     heroImagePublicId: emptyToNull(formData.get('heroImagePublicId')),
     heroImageVerticalPercent: formData.get('heroImageVerticalPercent') ?? undefined,
+    homeImageUrl:      emptyToNull(formData.get('homeImageUrl')),
+    homeImagePublicId: emptyToNull(formData.get('homeImagePublicId')),
     paragraphs,
   };
 

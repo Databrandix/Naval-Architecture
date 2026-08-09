@@ -440,17 +440,23 @@ model FooterCampusLink {
 // ════════════════════════════════════════════════════════════════
 
 model AboutOverview {
-  id                       String   @id @default("singleton")
+  id                       String  @id @default("singleton")
   // Hero (PageShell)
   heroTitle                String
   heroSubtitle             String?
   heroOverline             String?
   heroImageUrl             String
   heroImagePublicId        String?
-  heroImageVerticalPercent Int      @default(50)
+  heroImageVerticalPercent Int     @default(50)
   // Body — variable-length list of paragraph bodies (HTML allowed)
-  paragraphs               String[]
-  updatedAt                DateTime @updatedAt
+  /// The picture beside the overview text on the homepage. Separate from the
+  /// hero above: that one banners this page, this one sits next to the
+  /// paragraph on the front page.
+  homeImageUrl             String?
+  homeImagePublicId        String?
+
+  paragraphs String[]
+  updatedAt  DateTime @updatedAt
 
   @@map("about_overview")
 }
