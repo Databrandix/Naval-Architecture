@@ -76,7 +76,15 @@ export default async function EventDetailPage({
   const catStyle = CATEGORY_STYLES[ev.category] ?? 'bg-gray-100 text-gray-700';
 
   return (
-    <PageShell title={ev.shortTitle} overline="Events" contentClassName="bg-gray-50 py-12 md:py-20">
+    <PageShell
+      title={ev.shortTitle}
+      overline="Events"
+      /* The event's own banner when it has one, otherwise its card picture —
+         either beats the generic campus shot PageShell falls back to. */
+      image={ev.heroImageUrl ?? ev.imageUrl}
+      imagePosition={`center ${ev.heroImageVerticalPercent}%`}
+      contentClassName="bg-gray-50 py-12 md:py-20"
+    >
       <Container>
         {/* Back link */}
         <Link

@@ -704,38 +704,46 @@ model News {
 }
 
 model Event {
-  id            String    @id @default(cuid())
-  slug          String    @unique
-  title         String
-  shortTitle    String
+  id                       String    @id @default(cuid())
+  slug                     String    @unique
+  title                    String
+  shortTitle               String
   // category — Sports | Industrial Visit | Achievement | Partnership | Seminar | Exhibition
-  category      String
+  category                 String
   // status — Past | Current | Upcoming. Admin sets manually (no auto-derive
   // from eventDate). Matches the existing render which has events with
   // null dates marked Current.
-  status        String
+  status                   String
   // eventDate — nullable; some events have no fixed date (e.g. "current
   // partnerships"). Sort ordering: eventDate DESC NULLS LAST, createdAt DESC.
-  eventDate     DateTime?
+  eventDate                DateTime?
   // displayDate — admin override (e.g. "20 Apr", "2024"). Null = derive
   // from eventDate, both null = hide the date pill.
-  displayDate   String?
-  time          String?
-  venue         String?
+  displayDate              String?
+  time                     String?
+  venue                    String?
+  /// The banner across the top of the event page. Separate from imageUrl,
+  /// which is the picture inside the card: a wide banner and a card cover are
+  /// rarely the same crop, and without this the page banners a generic campus
+  /// photograph.
+  heroImageUrl             String?
+  heroImagePublicId        String?
+  heroImageVerticalPercent Int       @default(50)
+
   imageUrl      String
   imagePublicId String?
-  summary       String    @db.Text
+  summary       String   @db.Text
   // description — Json string[]: paragraphs for the detail page.
   description   Json
-  focus         String    @db.Text
+  focus         String   @db.Text
   // details — Json [{label,value}]: optional "Chief Guest / Chairperson /
   // Date / Venue" sidebar rows. Defaults to empty array.
   details       Json
   ctaLabel      String?
   ctaHref       String?
-  ctaExternal   Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  ctaExternal   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([eventDate])
   @@index([status])

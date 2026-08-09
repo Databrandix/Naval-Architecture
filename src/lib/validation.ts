@@ -610,6 +610,10 @@ export const eventCreateSchema = z.object({
   venue:         optionalNullableString,
   imageUrl:      z.string().min(1),
   imagePublicId: optionalNullableString,
+  /* The banner across the top of the event page; the card cover is imageUrl. */
+  heroImageUrl:      optionalNullableString,
+  heroImagePublicId: optionalNullableString,
+  heroImageVerticalPercent: z.coerce.number().int().min(0).max(100).default(50),
   summary:       z.string().min(1),
   description:   paragraphsArraySchema,
   focus:         z.string().min(1),

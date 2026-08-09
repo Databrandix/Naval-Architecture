@@ -33,7 +33,10 @@ export default function OverviewSection({
           {heading}
         </motion.h2>
 
-        <div className="mx-auto grid max-w-[1090px] items-start gap-8 lg:gap-12 lg:grid-cols-[520px_1fr]">
+        {/* The text column is narrower than the picture's, so the picture gets
+            the larger share — the paragraph reads better short of full width
+            anyway, and the photograph was leaving white space beneath it. */}
+        <div className="mx-auto grid max-w-[1090px] items-start gap-8 lg:gap-12 lg:grid-cols-[460px_1fr]">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -71,8 +74,8 @@ export default function OverviewSection({
               alt={imageAlt}
               width={1600}
               height={900}
-              sizes="(min-width: 1024px) 540px, 100vw"
-              className="h-auto w-full object-cover lg:h-[294px]"
+              sizes="(min-width: 1024px) 600px, 100vw"
+              className="h-auto w-full rounded-lg object-cover lg:h-[380px]"
             />
           </motion.div>
         </div>
