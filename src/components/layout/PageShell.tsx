@@ -133,8 +133,11 @@ export default function PageShell({
                   <span key={href} className="inline-flex items-center gap-2">
                     <ChevronRight size={13} className="opacity-50" />
                     {isLast ? (
+                      /* The page's own title, not its URL — a page whose name
+                         differs from its slug would otherwise be called one
+                         thing in the heading and another in the trail. */
                       <span className="text-button-yellow font-semibold">
-                        {slugToTitle(seg)}
+                        {title || slugToTitle(seg)}
                       </span>
                     ) : (
                       <a href={href} className="hover:text-button-yellow transition-colors">

@@ -24,8 +24,9 @@
  * Safe to run again: it overwrites both files, updates the one layout row,
  * and leaves the menu alone if the entry is already there.
  */
+import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { copyFile, mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import { PrismaClient } from '@prisma/client';
@@ -49,8 +50,33 @@ const MUTED = '#6b6f85';
 const RULE = '#dcdfeb';
 
 const SLUG = 'department-layout-plan';
-const PDF_FILE = 'layout-plan-name.pdf';
-const COVER_FILE = 'layout-plan-name-cover.jpg';
+
+/**
+ * Both files carry a hash of their own contents in the name.
+ *
+ * Next.js serves everything under public/ with `Cache-Control: max-age=1y,
+ * immutable`. A browser takes `immutable` at its word: it will not ask
+ * whether the file changed, not even on a reload. Replacing a document at
+ * the same path therefore reaches nobody who had already opened the old one
+ * — which is exactly what happened the first time this plan was replaced.
+ * A new document means a new name, so the URL a visitor has cached is simply
+ * no longer the one the page links to.
+ */
+const PDF_STEM = 'layout-plan-name';
+const COVER_STEM = 'layout-plan-name-cover';
+
+const digest = (buffer) => createHash('sha256').update(buffer).digest('hex').slice(0, 8);
+
+/** Drop earlier builds of this asset so public/assets does not silt up. */
+async function pruneOlder(dir, stem, keep) {
+  const pattern = new RegExp(`^${stem}(-[0-9a-f]{8})?\\.[a-z]+$`);
+  for (const name of await readdir(dir)) {
+    if (name !== keep && pattern.test(name)) {
+      await unlink(path.join(dir, name));
+      console.log(`  removed stale ${name}`);
+    }
+  }
+}
 
 /** XML-escape — an office name with an ampersand would break the cover SVG. */
 const esc = (s) =>
@@ -66,7 +92,7 @@ const clip = (s, max) => (s.length <= max ? s : `${s.slice(0, max - 1).trimEnd()
  * office rows the document lists — a preview of what is inside, not an
  * imitation of a scan.
  */
-async function buildCover(dept, offices, outputPath) {
+async function buildCover(dept, offices) {
   /* Department offices lead, as they do in the table on the page — someone
      opening a department's plan is looking for the department first. */
   const ordered = [...offices].sort(
@@ -99,7 +125,7 @@ async function buildCover(dept, offices, outputPath) {
   <rect y="790" width="600" height="10" fill="${MAGENTA}"/>
 </svg>`;
 
-  await writeFile(outputPath, await sharp(Buffer.from(svg)).jpeg({ quality: 88 }).toBuffer());
+  return sharp(Buffer.from(svg)).jpeg({ quality: 88 }).toBuffer();
 }
 
 /** Put Layout Plan in the About menu, after the entries already there. */
@@ -139,14 +165,22 @@ async function main() {
   const assets = path.join(process.cwd(), 'public', 'assets');
   await mkdir(assets, { recursive: true });
 
-  await copyFile(pdfArg, path.join(assets, PDF_FILE));
-  await buildCover(dept ?? { name: '' }, offices, path.join(assets, COVER_FILE));
+  const pdf = await readFile(pdfArg);
+  const pdfFile = `${PDF_STEM}-${digest(pdf)}.pdf`;
+  await writeFile(path.join(assets, pdfFile), pdf);
+  await pruneOlder(assets, PDF_STEM, pdfFile);
+
+  const cover = await buildCover(dept ?? { name: '' }, offices);
+  const coverFile = `${COVER_STEM}-${digest(cover)}.jpg`;
+  await writeFile(path.join(assets, coverFile), cover);
+  await pruneOlder(assets, COVER_STEM, coverFile);
 
   const row = {
     title: `${dept?.name ?? 'Department'} — Layout Plan`,
     shortTitle: 'Departmental Layout Plan',
-    coverUrl: `/assets/${COVER_FILE}`,
-    pdfUrl: `/assets/${PDF_FILE}`,
+    coverUrl: `/assets/${coverFile}`,
+    pdfUrl: `/assets/${pdfFile}`,
+    /* What the browser saves it as — stable and readable, unlike the URL. */
     pdfFileName: 'SU-NAME-Layout-Plan.pdf',
     displayOrder: 1,
   };
@@ -158,8 +192,8 @@ async function main() {
 
   await addMenuEntry('/about/department-layout');
 
-  console.log(`copied ${path.basename(pdfArg)} → public/assets/${PDF_FILE}`);
-  console.log(`wrote public/assets/${COVER_FILE} previewing ${offices.length} offices`);
+  console.log(`copied ${path.basename(pdfArg)} → public/assets/${pdfFile}`);
+  console.log(`wrote public/assets/${coverFile} previewing ${offices.length} offices`);
 }
 
 main()
