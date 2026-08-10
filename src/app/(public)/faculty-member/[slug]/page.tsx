@@ -11,7 +11,7 @@ import {
   getUniversityIdentity,
   getPageHero,
 } from '@/lib/identity';
-import { type SectionContent, type SectionItem } from '@/lib/faculty-data';
+import { type SectionContent, type SectionItem } from '@/lib/faculty-sections';
 
 // Pre-render every current slug at build time; Next.js defaults to
 // dynamicParams=true so admin-added slugs after deploy render

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Plus, Pencil, GripVertical } from 'lucide-react';
 import DepartmentLayoutList from './DepartmentLayoutList';
 
-export const metadata = { title: 'Department Layout — EEE Admin' };
+export const metadata = { title: 'Department Layout' };
 
 export default async function DepartmentLayoutPage() {
   const session = await getSession();

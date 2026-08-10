@@ -19,7 +19,14 @@ export interface ProspectusItem {
 
 const filters: ('All' | Level)[] = ['All', 'Undergraduate', 'Postgraduate'];
 
-export default function ProspectusClient({ items }: { items: ProspectusItem[] }) {
+export default function ProspectusClient({
+  items,
+  departmentShortCode,
+}: {
+  items: ProspectusItem[];
+  /** Named in the "no postgraduate programmes yet" line. */
+  departmentShortCode: string;
+}) {
   const [query, setQuery] = useState('');
   const [active, setActive] = useState<'All' | Level>('All');
 
@@ -89,7 +96,7 @@ export default function ProspectusClient({ items }: { items: ProspectusItem[] })
                 Postgraduate prospectus coming soon
               </p>
               <p className="text-gray-500 text-sm">
-                Postgraduate programs in EEE are not offered yet. Please check back later for updates.
+                {`Postgraduate programs in ${departmentShortCode} are not offered yet. Please check back later for updates.`}
               </p>
             </>
           ) : (

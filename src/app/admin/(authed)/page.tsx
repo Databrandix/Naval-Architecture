@@ -246,7 +246,7 @@ export default async function DashboardHome() {
           <ActionCard
             href="/admin/about-club"
             icon={Info}
-            title="About — SUEEC"
+            title="About — Department Club"
             desc="Hero, intro, stats, activities, network"
           />
           <ActionCard

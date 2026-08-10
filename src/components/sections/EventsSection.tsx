@@ -17,6 +17,8 @@ type EventRow = {
 };
 
 type Props = {
+  /** Named in the subtitle, so a copy of this site does not advertise another department. */
+  departmentShortCode: string;
   events: readonly EventRow[];
 };
 
@@ -29,7 +31,7 @@ function formatDate(row: EventRow): string | null {
   return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function EventsSection({ events }: Props) {
+export default function EventsSection({ events, departmentShortCode }: Props) {
   if (events.length === 0) return null;
 
   return (
@@ -39,7 +41,7 @@ export default function EventsSection({ events }: Props) {
           <SectionTitle
             eyebrow="Campus Engagement"
             title="Departmental Events"
-            subtitle="From hands-on workshops to breakthrough announcements—never miss what's shaping tomorrow's innovations at EEE."
+            subtitle={`From hands-on workshops to breakthrough announcements—never miss what's shaping tomorrow's innovations at ${departmentShortCode}.`}
           />
           <a href={EVENTS_PATH} className="hidden md:block">
             <Button variant="ghost" className="mb-6 md:mb-8 group">

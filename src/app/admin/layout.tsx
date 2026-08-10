@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import ToasterClient from '@/components/admin/ToasterClient';
 
 export const metadata: Metadata = {
-  title: { default: 'Admin', template: '%s — EEE Admin' },
+  title: { default: 'Admin', template: '%s — Department Admin' },
   robots: { index: false, follow: false },
 };
 

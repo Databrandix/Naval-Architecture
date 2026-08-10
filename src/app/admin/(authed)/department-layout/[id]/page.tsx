@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth-server';
 import DepartmentLayoutForm from '../DepartmentLayoutForm';
 
-export const metadata = { title: 'Edit Department Layout — EEE Admin' };
+export const metadata = { title: 'Edit Department Layout' };
 
 export default async function EditDepartmentLayoutPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();

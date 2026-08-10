@@ -6,6 +6,7 @@
 // the skip reason. Admin sees the diagnostic in the detail page.
 
 import { Resend } from 'resend';
+import { prisma } from '@/lib/db';
 
 export type EmailDispatchResult =
   | { status: 'sent' }
@@ -29,7 +30,21 @@ interface ContactEmailPayload {
 // Domains and update this constant. The DB field
 // UniversityIdentity.contactSubmissionEmail is the RECEIVING side;
 // FROM_ADDRESS is the SENDING side.
-const FROM_ADDRESS = 'Sonargaon EEE Contact <onboarding@resend.dev>';
+/**
+ * The sender line and the banner both name the department, and both had it
+ * written in — a copy of this site sent contact notifications signed by the
+ * department it was copied from. The short code comes from the department
+ * identity row; the address itself still needs a verified domain in Resend.
+ */
+const SENDER_MAILBOX = 'onboarding@resend.dev';
+
+async function departmentShortCode(): Promise<string> {
+  const dept = await prisma.departmentIdentity.findUnique({
+    where: { id: 'singleton' },
+    select: { shortCode: true },
+  });
+  return dept?.shortCode ?? '';
+}
 
 export async function sendContactNotification(
   payload: ContactEmailPayload,
@@ -45,16 +60,19 @@ export async function sendContactNotification(
     };
   }
 
+  const shortCode = await departmentShortCode();
+  const fromAddress = `Sonargaon ${shortCode} Contact <${SENDER_MAILBOX}>`;
+
   const resend = new Resend(apiKey);
   try {
     const result = await resend.emails.send({
-      from: FROM_ADDRESS,
+      from: fromAddress,
       to: payload.to,
       replyTo: payload.fromEmail,
       subject: payload.subject && payload.subject.trim().length > 0
         ? `Contact: ${payload.subject}`
         : `Contact form: ${payload.fromName}`,
-      html: renderHtml(payload),
+      html: renderHtml(payload, shortCode),
     });
     if (result.error) {
       return {
@@ -71,7 +89,7 @@ export async function sendContactNotification(
   }
 }
 
-function renderHtml(p: ContactEmailPayload): string {
+function renderHtml(p: ContactEmailPayload, departmentShortCode: string): string {
   const esc = (s: string) =>
     s
       .replace(/&/g, '&amp;')
@@ -99,7 +117,7 @@ function renderHtml(p: ContactEmailPayload): string {
 <html><body style="margin:0;background:#f6f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:640px;margin:24px auto;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
     <div style="background:#2B3175;color:#fff;padding:18px 24px;">
-       <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.85;">Sonargaon EEE</div>
+       <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.85;">Sonargaon ${departmentShortCode}</div>
       <div style="font-size:18px;font-weight:700;margin-top:4px;">New contact form submission</div>
     </div>
     <div style="padding:24px;">

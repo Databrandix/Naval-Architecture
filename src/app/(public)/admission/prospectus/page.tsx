@@ -1,6 +1,6 @@
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
-import { getProspectusEntries, getPageHero } from '@/lib/identity';
+import { getProspectusEntries, getPageHero, getDepartmentIdentity } from '@/lib/identity';
 import ProspectusClient from './ProspectusClient';
 import { departmentMetadata } from '@/lib/page-metadata';
 
@@ -13,9 +13,10 @@ export async function generateMetadata() {
 }
 
 export default async function ProspectusPage() {
-  const [entries, hero] = await Promise.all([
+  const [entries, hero, dept] = await Promise.all([
     getProspectusEntries(),
     getPageHero('admission-prospectus'),
+    getDepartmentIdentity(),
   ]);
   // The Json columns are not present on this table — just basic
   // strings/IDs. Pass the rows directly to the client; date columns
@@ -40,7 +41,7 @@ export default async function ProspectusPage() {
       contentClassName="bg-gray-50 py-12 md:py-20"
     >
       <Container>
-        <ProspectusClient items={items} />
+        <ProspectusClient items={items} departmentShortCode={dept.shortCode} />
       </Container>
     </PageShell>
   );

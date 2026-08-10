@@ -8,7 +8,7 @@ export async function generateMetadata() {
   return departmentMetadata({
     title: 'Events',
     description:
-      'Departmental events from the EEE Department at Sonargaon University — sports, industrial visits, seminars, exhibitions.',
+      'Departmental events from the {department} at Sonargaon University — sports, industrial visits, seminars, exhibitions.',
   });
 }
 

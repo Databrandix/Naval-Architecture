@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth-server';
 import ApplicationsList from './ApplicationsList';
 
-export const metadata = { title: 'SUEEC — Applications' };
+export const metadata = { title: 'Club — Applications' };
 
 export default async function DepartmentClubApplicationsPage() {
   const session = await getSession();

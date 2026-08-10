@@ -513,14 +513,14 @@ export default function Sidebar({
           )}
         </Link>
 
-        {/* SUEEC join applications — operational inbox, mirrors
+        {/* Club join applications — operational inbox, mirrors
             the Contact Submissions placement (no badge wired yet). */}
         <Link
           href="/admin/club-applications"
           className={linkClass(!!pathname?.startsWith('/admin/club-applications'))}
         >
           <Wrench size={16} />
-          SUEEC Applications
+          Club Applications
         </Link>
 
         {/* Newsletter — page CMS + subscriber list. Grouped together so

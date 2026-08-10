@@ -1095,7 +1095,7 @@ export const newsletterSubscribeSchema = z.object({
 });
 
 // ─────────────────────────────────────────────────────────────────
-//  SUEEC join application — public submit + admin status edit
+//  Club join application — public submit + admin status edit
 // ─────────────────────────────────────────────────────────────────
 
 const clubSemesterEnum = z.enum(['1', '2', '3', '4', '5', '6', '7', '8']);

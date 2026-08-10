@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth-server';
 import DepartmentLayoutForm from '../DepartmentLayoutForm';
 
-export const metadata = { title: 'New Department Layout — EEE Admin' };
+export const metadata = { title: 'New Department Layout' };
 
 export default async function NewDepartmentLayoutPage() {
   const session = await getSession();

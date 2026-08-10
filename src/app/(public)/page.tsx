@@ -93,7 +93,7 @@ export default async function HomePage() {
       />
       <ResearchLabsSection labs={labs} />
       <MajorResearchSection areas={researchAreas} />
-      <EventsSection events={eventsTop} />
+      <EventsSection events={eventsTop} departmentShortCode={dept.shortCode} />
       <NewsSection news={newsTop} />
       <ServicesSection />
     </>
