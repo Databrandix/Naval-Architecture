@@ -40,7 +40,7 @@ const staticPages: SearchItem[] = [
   { title: 'Mission & Vision', type: 'Page', href: '/about/mission-vision', description: "Department's mission and long-term vision" },
   { title: 'Laboratory Facility', type: 'Page', href: '/about/laboratory-facility', description: 'Departmental labs and equipment' },
   { title: 'Lab Facility', type: 'Page', href: '/about/lab-facility', description: 'List of all departmental labs' },
-  { title: 'Department Layout', type: 'Page', href: '/about/department-layout', description: 'Which office is on which level' },
+  { title: 'Layout Plan', type: 'Page', href: '/about/department-layout', description: 'Which office is on which level' },
   { title: 'SU NAME Club', type: 'Page', href: '/about/club', description: 'Student club of the Department of Naval Architecture and Marine Engineering' },
 
   // Faculty
