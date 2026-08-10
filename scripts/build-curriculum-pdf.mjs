@@ -12,8 +12,9 @@
  * public/assets, and served as a static file. Nothing generates PDFs at
  * request time.
  */
+import { createHash } from 'node:crypto';
 import { createWriteStream, existsSync } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import PDFDocument from 'pdfkit';
 import { PrismaClient } from '@prisma/client';
@@ -63,6 +64,25 @@ const formatCredits = (value) =>
 
 function creditsOf(courses) {
   return courses.reduce((sum, c) => sum + (c.credits ?? 0), 0);
+}
+
+/**
+ * Drop earlier builds of this document.
+ *
+ * The file carries a hash of its own contents in the name because Next.js
+ * serves everything under public/ as `immutable` for a year: a browser that
+ * has the old file will not ask whether it changed, not even on a reload, so
+ * a rebuilt curriculum at the same path would reach nobody who had already
+ * downloaded it. A new build means a new name, and the old one goes.
+ */
+async function pruneOlder(dir, stem, keep) {
+  const pattern = new RegExp(`^${stem}(-[0-9a-f]{8})?\\.pdf$`);
+  for (const name of await readdir(dir)) {
+    if (name !== keep && pattern.test(name)) {
+      await unlink(path.join(dir, name));
+      console.log(`  removed stale ${name}`);
+    }
+  }
 }
 
 /** Start a new page when the next block would not fit on this one. */
@@ -214,10 +234,12 @@ async function main() {
   const creditRows = program.curriculum.creditRows ?? [];
 
   const slug = program.degreeCode.toLowerCase();
-  const fileName = `${slug}-course-structure.pdf`;
-  const relativePath = `/assets/${fileName}`;
-  const outputPath = path.join(process.cwd(), 'public', 'assets', fileName);
-  await mkdir(path.dirname(outputPath), { recursive: true });
+  const stem = `${slug}-course-structure`;
+  const assets = path.join(process.cwd(), 'public', 'assets');
+  /* Written under a working name, then renamed to carry a hash of itself —
+     see the note above pruneOlder for why the name has to change. */
+  const outputPath = path.join(assets, `${stem}.building.pdf`);
+  await mkdir(assets, { recursive: true });
 
   const doc = new PDFDocument({ size: 'A4', margin: PAGE_MARGIN, info: { Title: `${program.programName} — Course Structure` } });
 
@@ -269,9 +291,17 @@ async function main() {
     stream.on('error', reject);
   });
 
+  const hash = createHash('sha256').update(await readFile(outputPath)).digest('hex').slice(0, 8);
+  const fileName = `${stem}-${hash}.pdf`;
+  const relativePath = `/assets/${fileName}`;
+  await rename(outputPath, path.join(assets, fileName));
+  await pruneOlder(assets, stem, fileName);
+
   await prisma.programCurriculum.update({
     where: { programId: program.id },
-    data: { pdfUrl: relativePath, pdfFileName: fileName },
+    /* pdfFileName is what the browser saves it as — readable, and without the
+       hash, which means nothing to whoever opens the file. */
+    data: { pdfUrl: relativePath, pdfFileName: `${stem}.pdf` },
   });
 
   console.log(`wrote public${relativePath}`);

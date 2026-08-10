@@ -105,7 +105,7 @@ export default function CurriculumAdminForms({
               name="pdfUrl"
               type="text"
               defaultValue={pdfUrl}
-              placeholder="/assets/bsc-name-course-structure.pdf"
+              placeholder="/assets/course-structure.pdf"
               className={`${inputClass} font-mono`}
             />
           </div>
