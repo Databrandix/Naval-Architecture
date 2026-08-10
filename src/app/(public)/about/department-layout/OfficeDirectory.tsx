@@ -17,6 +17,13 @@ export type Office = {
   isDepartment: boolean;
 };
 
+/** A departmental room that is not an office — a laboratory, from its own record. */
+export type Room = {
+  id: string;
+  name: string;
+  level: string;
+};
+
 function OfficeRow({ office }: { office: Office }) {
   return (
     <tr className="border-t border-gray-100">
@@ -35,7 +42,13 @@ function OfficeRow({ office }: { office: Office }) {
   );
 }
 
-export default function OfficeDirectory({ offices }: { offices: Office[] }) {
+export default function OfficeDirectory({
+  offices,
+  rooms = [],
+}: {
+  offices: Office[];
+  rooms?: Room[];
+}) {
   if (offices.length === 0) return null;
 
   const departmental = offices.filter((o) => o.isDepartment);
@@ -82,6 +95,16 @@ export default function OfficeDirectory({ offices }: { offices: Office[] }) {
               </tr>
               {departmental.map((office) => (
                 <OfficeRow key={office.id} office={office} />
+              ))}
+              {/* The laboratories are departmental space too, and the office
+                  list on its own leaves the department looking like two rooms
+                  in a building of twenty-two. Their levels come from each
+                  laboratory's own record, not from the plan document. */}
+              {rooms.map((room) => (
+                <OfficeRow
+                  key={room.id}
+                  office={{ ...room, building: '', isDepartment: true }}
+                />
               ))}
             </tbody>
           )}

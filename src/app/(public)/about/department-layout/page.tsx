@@ -1,6 +1,11 @@
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
-import { getDepartmentLayouts, getOfficeLocations, getPageHero } from '@/lib/identity';
+import {
+  getDepartmentLayouts,
+  getLaboratoryLabs,
+  getOfficeLocations,
+  getPageHero,
+} from '@/lib/identity';
 import { departmentMetadata } from '@/lib/page-metadata';
 import DepartmentLayoutClient from './DepartmentLayoutClient';
 import OfficeDirectory from './OfficeDirectory';
@@ -13,11 +18,18 @@ export async function generateMetadata() {
 }
 
 export default async function DepartmentLayoutPage() {
-  const [items, offices, hero] = await Promise.all([
+  const [items, offices, labs, hero] = await Promise.all([
     getDepartmentLayouts(),
     getOfficeLocations(),
+    getLaboratoryLabs(),
     getPageHero('department-layout'),
   ]);
+
+  /* A laboratory without a recorded location cannot be placed in the
+     building, so it is left out rather than listed against a blank. */
+  const rooms = labs
+    .filter((lab) => lab.location)
+    .map((lab) => ({ id: lab.id, name: lab.title, level: lab.location as string }));
 
   const mapped = items.map((i) => ({
     slug: i.slug,
@@ -39,7 +51,7 @@ export default async function DepartmentLayoutPage() {
         {/* The directory first: someone on this page is usually looking for a
             level, and reads it here rather than downloading a file to find it.
             The plan below is the same information to take away. */}
-        <OfficeDirectory offices={offices} />
+        <OfficeDirectory offices={offices} rooms={rooms} />
 
         {mapped.length > 0 && (
           <div className="mt-14 md:mt-20">
