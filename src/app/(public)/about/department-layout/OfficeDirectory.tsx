@@ -36,7 +36,7 @@ export default function OfficeDirectory({
   const addresses = [...new Set(offices.map((o) => o.building).filter(Boolean))];
 
   return (
-    <section className="mx-auto max-w-4xl">
+    <section className="mx-auto max-w-6xl">
       <div className="overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-sm">
         <header className="border-b border-gray-300 px-6 py-6 text-center">
           <h2 className="text-primary font-display text-xl font-bold md:text-2xl">
