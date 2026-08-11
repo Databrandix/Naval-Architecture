@@ -82,7 +82,18 @@ export default function ProspectusClient({
               hints, not guarantees — Chrome honours all three, Firefox most,
               Safari few — so the layout must still look right if a browser
               ignores every one of them. */}
-          <div className="h-[75vh] min-h-[420px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          {/* The frame takes the shape of an A4 page, capped at three quarters
+              of the screen. A fixed height left a band of empty grey under the
+              document on a phone: scaled to the width of a narrow screen, an
+              A4 page is about 480px tall and the frame was asking for 75vh.
+              On a wide screen the cap wins, the page overflows, and it scrolls
+              as before.
+
+              595x842 is the page size of the documents here. A prospectus in
+              some other shape would want its own ratio — the cap keeps that
+              from ever breaking the layout, it would only cost some scrolling
+              or bring the band back. */}
+          <div className="aspect-[595/842] max-h-[75vh] min-h-[320px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
             <iframe
               key={reading.slug}
               src={`${reading.pdf}#toolbar=0&navpanes=0&statusbar=0&view=FitH`}
