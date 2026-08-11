@@ -44,13 +44,56 @@ export default function ProspectusClient({
     });
   }, [items, query, active]);
 
-  /* The reader at the top follows the list below it, so filtering to a
-     programme opens that programme rather than leaving the wrong document
-     on screen. */
+  /* The reader follows the filter above it, so narrowing to a programme opens
+     that programme rather than leaving the wrong document on screen. */
   const reading = filtered.find((p) => p.pdf);
 
   return (
     <>
+      {/* Search and filters first: they choose which document the reader
+          below opens, so they have to be reachable without scrolling past a
+          full-height PDF to find them. */}
+      <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="relative flex-1">
+          <Search
+            size={18}
+            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search programs..."
+            className="focus:border-accent focus:ring-accent/15 w-full rounded-lg border border-gray-200 bg-white py-3 pr-4 pl-11 text-sm transition placeholder:text-gray-400 focus:ring-2 focus:outline-none"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {filters.map((f) => {
+            const isActive = active === f;
+            return (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setActive(f)}
+                className={`rounded-lg px-5 py-3 text-sm font-semibold whitespace-nowrap transition-all ${
+                  isActive
+                    ? 'bg-primary text-white shadow-md'
+                    : 'hover:border-accent hover:text-accent border border-gray-200 bg-white text-gray-700'
+                }`}
+              >
+                {f}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <p className="mb-8 text-sm text-gray-500">
+        Showing <span className="text-primary font-semibold">{filtered.length}</span>{' '}
+        {filtered.length === 1 ? 'program' : 'programs'}
+      </p>
+
       {reading && (
         <section className="mb-10 md:mb-14">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
@@ -104,48 +147,6 @@ export default function ProspectusClient({
           </div>
         </section>
       )}
-
-      {/* Search + Filters */}
-      <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center">
-        <div className="relative flex-1">
-          <Search
-            size={18}
-            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search programs..."
-            className="focus:border-accent focus:ring-accent/15 w-full rounded-lg border border-gray-200 bg-white py-3 pr-4 pl-11 text-sm transition placeholder:text-gray-400 focus:ring-2 focus:outline-none"
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {filters.map((f) => {
-            const isActive = active === f;
-            return (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setActive(f)}
-                className={`rounded-lg px-5 py-3 text-sm font-semibold whitespace-nowrap transition-all ${
-                  isActive
-                    ? 'bg-primary text-white shadow-md'
-                    : 'hover:border-accent hover:text-accent border border-gray-200 bg-white text-gray-700'
-                }`}
-              >
-                {f}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <p className="mb-8 text-sm text-gray-500">
-        Showing <span className="text-primary font-semibold">{filtered.length}</span>{' '}
-        {filtered.length === 1 ? 'program' : 'programs'}
-      </p>
 
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
