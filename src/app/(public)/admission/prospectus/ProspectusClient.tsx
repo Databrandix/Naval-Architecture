@@ -1,8 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { useMemo, useState } from 'react';
-import { Search, Download, ExternalLink } from 'lucide-react';
+import { BookOpen, Download, ExternalLink, Search } from 'lucide-react';
 import { withAttachmentDownload } from '@/lib/pdf-helpers';
 
 type Level = 'Undergraduate' | 'Postgraduate';
@@ -13,9 +12,11 @@ export interface ProspectusItem {
   shortTitle: string;
   department: string;
   level: string; // 'Undergraduate' | 'Postgraduate' (Zod-validated upstream)
-  cover: string;
   pdf: string;
 }
+/* No cover here any more. The row still stores one and the admin panel still
+   edits it — the public page opens the document itself instead of showing a
+   thumbnail of its first page. */
 
 const filters: ('All' | Level)[] = ['All', 'Undergraduate', 'Postgraduate'];
 
@@ -43,25 +44,65 @@ export default function ProspectusClient({
     });
   }, [items, query, active]);
 
+  /* The reader at the top follows the list below it, so filtering to a
+     programme opens that programme rather than leaving the wrong document
+     on screen. */
+  const reading = filtered.find((p) => p.pdf);
+
   return (
     <>
+      {reading && (
+        <section className="mb-10 md:mb-14">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-primary font-display text-lg font-bold md:text-xl">
+                {reading.shortTitle}
+              </h2>
+              <p className="text-sm text-gray-600">{reading.department}</p>
+            </div>
+            <a
+              href={reading.pdf}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:text-accent inline-flex items-center gap-1.5 text-sm font-semibold transition-colors"
+            >
+              <ExternalLink size={15} aria-hidden />
+              Open in a new tab
+            </a>
+          </div>
+
+          {/* The browser's own PDF reader, which scrolls the document in
+              place. Some mobile browsers refuse to render a PDF in a frame
+              and show nothing at all, which is why the link above it is not
+              optional — it is the way through for those readers. */}
+          <div className="h-[75vh] min-h-[420px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+            <iframe
+              key={reading.slug}
+              src={reading.pdf}
+              title={reading.title}
+              className="h-full w-full"
+            />
+          </div>
+        </section>
+      )}
+
       {/* Search + Filters */}
-      <div className="flex flex-col lg:flex-row gap-3 lg:items-center mb-3">
+      <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
           <Search
             size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
           />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search programs..."
-            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-200 bg-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 transition"
+            className="focus:border-accent focus:ring-accent/15 w-full rounded-lg border border-gray-200 bg-white py-3 pr-4 pl-11 text-sm transition placeholder:text-gray-400 focus:ring-2 focus:outline-none"
           />
         </div>
 
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2">
           {filters.map((f) => {
             const isActive = active === f;
             return (
@@ -69,10 +110,10 @@ export default function ProspectusClient({
                 key={f}
                 type="button"
                 onClick={() => setActive(f)}
-                className={`px-5 py-3 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+                className={`rounded-lg px-5 py-3 text-sm font-semibold whitespace-nowrap transition-all ${
                   isActive
                     ? 'bg-primary text-white shadow-md'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:border-accent hover:text-accent'
+                    : 'hover:border-accent hover:text-accent border border-gray-200 bg-white text-gray-700'
                 }`}
               >
                 {f}
@@ -82,20 +123,19 @@ export default function ProspectusClient({
         </div>
       </div>
 
-      <p className="text-sm text-gray-500 mb-8">
-        Showing <span className="font-semibold text-primary">{filtered.length}</span>{' '}
+      <p className="mb-8 text-sm text-gray-500">
+        Showing <span className="text-primary font-semibold">{filtered.length}</span>{' '}
         {filtered.length === 1 ? 'program' : 'programs'}
       </p>
 
-      {/* Program cards */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-12 text-center">
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
           {active === 'Postgraduate' && !query ? (
             <>
-              <p className="text-primary font-semibold text-base mb-1">
+              <p className="text-primary mb-1 text-base font-semibold">
                 Postgraduate prospectus coming soon
               </p>
-              <p className="text-gray-500 text-sm">
+              <p className="text-sm text-gray-500">
                 {`Postgraduate programs in ${departmentShortCode} are not offered yet. Please check back later for updates.`}
               </p>
             </>
@@ -104,36 +144,22 @@ export default function ProspectusClient({
           )}
         </div>
       ) : (
-        <div
-          className={
-            filtered.length === 1
-              ? 'flex justify-center'
-              : 'grid sm:grid-cols-2 lg:grid-cols-3 gap-6'
-          }
-        >
+        /* One row per programme rather than a wall of cover thumbnails: the
+           document itself is already open above, so the list only has to say
+           which programme it is and hand over the file. */
+        <div className="mx-auto grid max-w-4xl gap-4">
           {filtered.map((p) => (
             <article
               key={p.slug}
-              className={`bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow overflow-hidden flex flex-col ${
-                filtered.length === 1 ? 'w-full max-w-md' : ''
-              }`}
+              className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:p-6 sm:text-left"
             >
-              {/* Cover */}
-              <div className="bg-gray-50">
-                <Image
-                  src={p.cover}
-                  alt={p.title}
-                  width={600}
-                  height={800}
-                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  className="block w-full h-auto"
-                />
-              </div>
+              <span className="from-primary to-accent inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-md">
+                <BookOpen size={22} strokeWidth={1.75} aria-hidden />
+              </span>
 
-              {/* Body */}
-              <div className="p-5 flex-1 flex flex-col">
+              <div className="min-w-0 flex-1">
                 <span
-                  className={`inline-block w-fit px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase mb-3 ${
+                  className={`mb-1.5 inline-block w-fit rounded-full px-3 py-1 text-[11px] font-bold tracking-wider uppercase ${
                     p.level === 'Undergraduate'
                       ? 'bg-primary/8 text-primary'
                       : 'bg-accent/10 text-accent'
@@ -141,38 +167,26 @@ export default function ProspectusClient({
                 >
                   {p.level}
                 </span>
-
-                <h3 className="font-display text-base md:text-lg font-bold text-primary leading-snug mb-1">
+                <p className="text-primary font-display text-[15px] font-bold md:text-base">
                   {p.shortTitle}
-                </h3>
-                <p className="text-sm text-gray-600 mb-5">{p.department}</p>
-
-                {p.pdf ? (
-                  <div className="mt-auto flex flex-col gap-2.5">
-                    <a
-                      href={p.pdf}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary hover:bg-primary/90 text-white text-sm font-semibold rounded-md transition-colors"
-                    >
-                      <ExternalLink size={16} />
-                      View Prospectus
-                    </a>
-                    <a
-                      href={withAttachmentDownload(p.pdf)}
-                      download
-                      className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white text-sm font-semibold rounded-md transition-colors"
-                    >
-                      <Download size={16} />
-                      Download
-                    </a>
-                  </div>
-                ) : (
-                  <span className="mt-auto inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-gray-100 text-gray-400 text-sm font-semibold rounded-md cursor-not-allowed">
-                    PDF coming soon
-                  </span>
-                )}
+                </p>
+                <p className="text-sm text-gray-500">{p.department}</p>
               </div>
+
+              {p.pdf ? (
+                <a
+                  href={withAttachmentDownload(p.pdf)}
+                  download
+                  className="bg-primary hover:bg-primary/90 inline-flex shrink-0 items-center justify-center gap-2 rounded-lg px-6 py-3 font-semibold text-white shadow-md transition-colors"
+                >
+                  <Download size={17} aria-hidden />
+                  Download PDF
+                </a>
+              ) : (
+                <span className="inline-flex shrink-0 cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-gray-100 px-6 py-3 text-sm font-semibold text-gray-400">
+                  PDF coming soon
+                </span>
+              )}
             </article>
           ))}
         </div>

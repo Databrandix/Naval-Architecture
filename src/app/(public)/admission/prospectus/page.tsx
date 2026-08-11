@@ -27,7 +27,6 @@ export default async function ProspectusPage() {
     shortTitle: p.shortTitle,
     department: p.department,
     level: p.level,
-    cover: p.coverUrl,
     pdf: p.pdfUrl ?? '',
   }));
 
