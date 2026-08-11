@@ -1,8 +1,9 @@
-import { ArrowRight, UserRound } from 'lucide-react';
+import { ArrowRight, Download, FileText, UserRound } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
 import { getServiceCharter, getPageHero } from '@/lib/identity';
 import { departmentMetadata } from '@/lib/page-metadata';
+import documents from '@/generated/documents.json';
 
 export async function generateMetadata() {
   return departmentMetadata({
@@ -59,7 +60,7 @@ export default async function ServiceCharterPage() {
             <p className="text-gray-500">No services listed yet.</p>
           </div>
         ) : (
-          <div className="mx-auto grid max-w-6xl gap-5 md:gap-6 lg:grid-cols-2">
+          <div className="mx-auto grid max-w-[1400px] gap-5 md:gap-6 lg:grid-cols-2 xl:grid-cols-3">
             {services.map((service) => {
               const steps = stepsOf(service.steps);
 
@@ -111,6 +112,38 @@ export default async function ServiceCharterPage() {
                 </article>
               );
             })}
+          </div>
+        )}
+
+        {/* The whole charter as one document. Built from these same rows by
+            scripts/build-service-charter-pdf.mjs, so it cannot say anything
+            the cards above do not — but it is only rebuilt when that script
+            is run, so a service edited in the admin panel reaches the
+            download on the next build, not immediately. */}
+        {services.length > 0 && (
+          <div className="mx-auto mt-12 max-w-[1400px] md:mt-16">
+            <div className="border-primary/15 from-primary/5 flex flex-col items-center gap-5 rounded-2xl border bg-gradient-to-r via-white to-white p-6 text-center shadow-sm sm:flex-row sm:p-8 sm:text-left">
+              <span className="from-primary to-accent inline-flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-md">
+                <FileText size={26} strokeWidth={1.75} aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-primary font-display text-[17px] font-bold md:text-lg">
+                  Service Charter as a PDF
+                </p>
+                <p className="mt-0.5 text-[14.5px] text-gray-600">
+                  All {services.length} services, their steps and the person responsible for each —
+                  in one document you can keep or print.
+                </p>
+              </div>
+              <a
+                href={documents.serviceCharter.url}
+                download={documents.serviceCharter.fileName}
+                className="bg-primary hover:bg-primary/90 inline-flex shrink-0 items-center justify-center gap-2 rounded-lg px-7 py-3.5 font-semibold text-white shadow-md transition-colors"
+              >
+                <Download size={18} aria-hidden />
+                Download PDF
+              </a>
+            </div>
           </div>
         )}
       </Container>
