@@ -24,21 +24,43 @@ import type { NextConfig } from 'next';
 //   - frame-src — Footer Google Maps embed only.
 //   - font-src 'self' data: — next/font/google self-hosts to /_next/
 //     static/fonts at build time, no Google Fonts CDN runtime fetch.
-const cspReportOnly = [
+const csp = (frameAncestors: string) => [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://res.cloudinary.com",
   "font-src 'self' data:",
   "connect-src 'self'",
-  "frame-src https://www.google.com https://maps.google.com",
-  "frame-ancestors 'none'",
+  "frame-src 'self' https://www.google.com https://maps.google.com",
+  `frame-ancestors ${frameAncestors}`,
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
   "upgrade-insecure-requests",
   "report-uri /api/csp-report",
 ].join('; ');
+
+const cspReportOnly = csp("'none'");
+
+/**
+ * Bundled PDFs are the one thing this site frames in its own pages — the
+ * prospectus reader on /admission/prospectus opens the document in place
+ * rather than sending the reader to a new tab.
+ *
+ * Site-wide `X-Frame-Options: DENY` and `frame-ancestors 'none'` blocked
+ * that, and browsers enforce frame-ancestors even from a Report-Only policy,
+ * so the frame came up as Chrome's "refused to connect" box.
+ *
+ * Relaxing it for these files only costs nothing: clickjacking works by
+ * framing an interactive page and steering a click into an action carried by
+ * the visitor's session. A static PDF has no such controls, and the exception
+ * is same-origin, so another site still cannot frame these. Every HTML route
+ * keeps DENY.
+ */
+const framablePdfHeaders = [
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'Content-Security-Policy-Report-Only', value: csp("'self'") },
+];
 
 const securityHeaders = [
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
@@ -101,6 +123,12 @@ const nextConfig: NextConfig = {
       {
         source: '/:path*',
         headers: securityHeaders,
+      },
+      // Last, so it overrides the two frame headers set above for these
+      // files only. See framablePdfHeaders for why that is safe.
+      {
+        source: '/assets/:file(.*\\.pdf)',
+        headers: framablePdfHeaders,
       },
     ];
   },
