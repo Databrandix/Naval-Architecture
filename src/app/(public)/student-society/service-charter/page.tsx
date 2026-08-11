@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { ArrowRight, Download, FileText, UserRound } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
@@ -21,6 +22,61 @@ export async function generateMetadata() {
  * order and the person responsible underneath, rather than a wide table that
  * has to be read across on a phone.
  */
+
+/**
+ * Turn the addresses inside a line into things you can act on.
+ *
+ * The charter is a list of errands, and half of each errand is a way to reach
+ * someone: a portal to log into, an office to email, a number to ring. Those
+ * arrived from the department's spreadsheet as plain text, so a student on a
+ * phone was reading a number off the screen and typing it back in by hand.
+ *
+ * Only these three shapes are matched, and only where they are already
+ * written out in full — nothing is inferred, and a line with none of them is
+ * returned exactly as it came.
+ */
+const LINK =
+  /(https?:\/\/[^\s<>()]+[^\s<>().,;:!?'"])|([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})|(\+?880[\s-]?\d{4}-\d{6}|\b01\d{9}\b)/g;
+
+const LINK_CLASS =
+  'text-primary decoration-primary/40 hover:decoration-primary underline underline-offset-2 transition-colors break-words';
+
+function linkify(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  let cursor = 0;
+
+  for (const match of text.matchAll(LINK)) {
+    const [value, url, email, phone] = match;
+    const at = match.index ?? 0;
+    if (at > cursor) parts.push(text.slice(cursor, at));
+
+    if (url) {
+      parts.push(
+        <a key={at} href={url} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
+          {value}
+        </a>,
+      );
+    } else if (email) {
+      parts.push(
+        <a key={at} href={`mailto:${email}`} className={LINK_CLASS}>
+          {value}
+        </a>,
+      );
+    } else {
+      /* tel: wants the digits only; the page keeps the spacing as written. */
+      parts.push(
+        <a key={at} href={`tel:${phone.replace(/[\s-]/g, '')}`} className={LINK_CLASS}>
+          {value}
+        </a>,
+      );
+    }
+
+    cursor = at + value.length;
+  }
+
+  if (cursor < text.length) parts.push(text.slice(cursor));
+  return parts;
+}
 
 type Step = string;
 
@@ -89,7 +145,7 @@ export default async function ServiceCharterPage() {
                         {steps.length === 1 && (
                           <ArrowRight size={15} className="text-accent mt-1 shrink-0" aria-hidden />
                         )}
-                        <span className="min-w-0 break-words">{step}</span>
+                        <span className="min-w-0 break-words">{linkify(step)}</span>
                       </li>
                     ))}
                   </ol>
@@ -103,7 +159,7 @@ export default async function ServiceCharterPage() {
                             key={line}
                             className={index === 0 ? 'block font-semibold text-gray-800' : 'block'}
                           >
-                            {line}
+                            {linkify(line)}
                           </span>
                         ))}
                       </div>
