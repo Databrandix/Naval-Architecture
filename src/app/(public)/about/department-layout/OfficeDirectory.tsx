@@ -36,12 +36,7 @@ export default function OfficeDirectory({
   const addresses = [...new Set(offices.map((o) => o.building).filter(Boolean))];
 
   return (
-    /* Sized to the table rather than to the page. Two columns of short,
-       repetitive addresses stretched across a wide container leave a band of
-       empty white down one side of every row; letting the card end where the
-       text ends puts that space outside the border, where it reads as margin
-       instead of as a gap in the table. */
-    <section className="mx-auto w-fit max-w-full">
+    <section className="mx-auto max-w-6xl">
       <div className="overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-sm">
         <header className="border-b border-gray-300 px-6 py-6 text-center">
           <h2 className="text-primary font-display text-xl font-bold md:text-2xl">
@@ -54,16 +49,21 @@ export default function OfficeDirectory({
         </header>
 
         <div className="overflow-x-auto">
-          <table className="w-auto text-left align-top text-[15px]">
+          {/* The office column takes all the slack (`w-full` on one cell of an
+              auto-layout table), and the location column stays at the width of
+              its own longest line. The space the card does not need therefore
+              falls between the two columns, as a gutter, rather than trailing
+              off the right of every row where it reads as a hole. */}
+          <table className="w-full text-left align-top text-[15px]">
             <caption className="sr-only">
               Each office of Sonargaon University and the level it is on
             </caption>
             <thead>
               <tr className="border-b border-gray-300 bg-gray-50 text-[13px] font-bold text-gray-700">
-                <th scope="col" className="px-5 py-3 md:px-8">
+                <th scope="col" className="w-full px-5 py-3 md:px-8">
                   Name of the Office
                 </th>
-                <th scope="col" className="px-5 py-3 md:px-8">
+                <th scope="col" className="px-5 py-3 whitespace-nowrap md:px-8">
                   Specific Location of the Office
                 </th>
               </tr>
@@ -80,7 +80,7 @@ export default function OfficeDirectory({
                       {office.name}
                     </span>
                   </td>
-                  <td className="px-5 py-3.5 align-top text-gray-700 md:px-8">
+                  <td className="px-5 py-3.5 align-top whitespace-nowrap text-gray-700 md:px-8">
                     <span className="block">{office.level}, Sonargaon University</span>
                     {office.building && (
                       <span className="block text-[13.5px] text-gray-500">
