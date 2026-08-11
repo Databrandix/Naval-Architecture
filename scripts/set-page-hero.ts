@@ -16,8 +16,12 @@
  * a page that has never had a banner.
  *
  * --vertical is the object-position the hero crops around: 0 keeps the top of
- * the picture, 100 the bottom, 50 the middle. A group photograph usually
- * wants something under 50 so the crop holds faces rather than tables.
+ * the picture, 100 the bottom, 50 the middle.
+ *
+ * Note the direction, which is easy to get backwards: a HIGHER number shows a
+ * LOWER slice of the picture, so the picture appears to move UP in the frame.
+ * To move the picture down, lower the number. A group photograph usually
+ * wants something under 50, so the crop holds faces rather than tables.
  *
  * Re-runnable: the row is keyed by page, and the upload overwrites by public
  * id, so running it again replaces the banner instead of adding one.
