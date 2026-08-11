@@ -74,11 +74,18 @@ export default function ProspectusClient({
           {/* The browser's own PDF reader, which scrolls the document in
               place. Some mobile browsers refuse to render a PDF in a frame
               and show nothing at all, which is why the link above it is not
-              optional — it is the way through for those readers. */}
+              optional — it is the way through for those readers.
+
+              The fragment asks that reader for the document and nothing else:
+              no thumbnail rail, no toolbar, and the page scaled to the width
+              of the frame so it does not sit in a grey trough. These are
+              hints, not guarantees — Chrome honours all three, Firefox most,
+              Safari few — so the layout must still look right if a browser
+              ignores every one of them. */}
           <div className="h-[75vh] min-h-[420px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
             <iframe
               key={reading.slug}
-              src={reading.pdf}
+              src={`${reading.pdf}#toolbar=0&navpanes=0&statusbar=0&view=FitH`}
               title={reading.title}
               className="h-full w-full"
             />
