@@ -56,11 +56,11 @@ const overline = flag('overline');
 const subtitle = flag('subtitle');
 const vertical = Number(flag('vertical') ?? 50);
 
-if (!key || !label || !publicPath || !title || !image) {
-  console.error('usage: --key <pageKey> --label <admin label> --path </route> --title <heading> --image <file> [--overline …] [--subtitle …] [--vertical 0-100]');
+if (!key) {
+  console.error('usage: --key <pageKey> [--label …] [--path /route] [--title …] [--image <file>] [--overline …] [--subtitle …] [--vertical 0-100]');
   process.exit(1);
 }
-if (!existsSync(image)) {
+if (image && !existsSync(image)) {
   console.error(`No such file: ${image}`);
   process.exit(1);
 }
@@ -93,38 +93,77 @@ async function readForUpload(filePath: string): Promise<{ buffer: Buffer; mime: 
 }
 
 async function main() {
-  const { buffer, mime } = await readForUpload(image as string);
-  const uploaded = await cloudinary.uploader.upload(
-    `data:${mime};base64,${buffer.toString('base64')}`,
-    {
-      folder: `${process.env.CLOUDINARY_UPLOAD_FOLDER}/page-heroes`,
-      public_id: key,
-      overwrite: true,
-      timeout: 120_000,
-    },
-  );
+  const before = await prisma.pageHero.findUnique({ where: { pageKey: key as string } });
+
+  if (!before && (!label || !publicPath || !title || !image)) {
+    console.error(
+      `No banner exists for "${key}" yet — creating one needs --label, --path, --title and --image.`,
+    );
+    process.exit(1);
+  }
+
+  /* Re-uploading a picture that has not changed costs a slow upload and a
+     Cloudinary transformation for nothing, and adjusting the crop is the
+     usual reason to run this a second time. */
+  let picture: { url: string; publicId: string; size: string } | null = null;
+  if (image) {
+    const { buffer, mime } = await readForUpload(image);
+    const uploaded = await cloudinary.uploader.upload(
+      `data:${mime};base64,${buffer.toString('base64')}`,
+      {
+        folder: `${process.env.CLOUDINARY_UPLOAD_FOLDER}/page-heroes`,
+        public_id: key,
+        overwrite: true,
+        timeout: 120_000,
+      },
+    );
+    picture = {
+      url: uploaded.secure_url as string,
+      publicId: uploaded.public_id as string,
+      size: `${uploaded.width}x${uploaded.height}`,
+    };
+  }
 
   const data = {
-    pageLabel: label as string,
-    publicPath: publicPath as string,
-    heroTitle: title as string,
-    heroSubtitle: subtitle ?? null,
-    heroOverline: overline ?? null,
-    heroImageUrl: uploaded.secure_url as string,
-    heroImagePublicId: uploaded.public_id as string,
+    ...(label ? { pageLabel: label } : {}),
+    ...(publicPath ? { publicPath } : {}),
+    ...(title ? { heroTitle: title } : {}),
+    ...(subtitle !== undefined ? { heroSubtitle: subtitle } : {}),
+    ...(overline !== undefined ? { heroOverline: overline } : {}),
+    ...(picture ? { heroImageUrl: picture.url, heroImagePublicId: picture.publicId } : {}),
     heroImageVerticalPercent: vertical,
   };
 
-  const before = await prisma.pageHero.findUnique({ where: { pageKey: key as string } });
-  await prisma.pageHero.upsert({
-    where: { pageKey: key as string },
-    create: { pageKey: key as string, ...data },
-    update: data,
-  });
+  /* Not an upsert: Prisma type-checks the create branch even when the row
+     exists, and on an update-only run the required columns are absent by
+     design — the point is to change one field and leave the rest alone. */
+  const row = before
+    ? await prisma.pageHero.update({ where: { pageKey: key as string }, data })
+    : await prisma.pageHero.create({
+        data: {
+          pageKey: key as string,
+          pageLabel: label as string,
+          publicPath: publicPath as string,
+          heroTitle: title as string,
+          heroSubtitle: subtitle ?? null,
+          heroOverline: overline ?? null,
+          heroImageUrl: (picture as { url: string }).url,
+          heroImagePublicId: (picture as { publicId: string }).publicId,
+          heroImageVerticalPercent: vertical,
+        },
+      });
 
-  console.log(`${before ? 'Replaced' : 'Created'} the banner for ${publicPath}`);
-  console.log(`  ${uploaded.width}x${uploaded.height}, cropped around ${vertical}%`);
-  console.log(`  ${uploaded.secure_url}`);
+  console.log(`${before ? 'Updated' : 'Created'} the banner for ${row.publicPath}`);
+  console.log(
+    picture
+      ? `  uploaded ${picture.size}, cropped around ${vertical}%`
+      : `  kept the existing picture, cropped around ${vertical}%${
+          before && before.heroImageVerticalPercent !== vertical
+            ? ` (was ${before.heroImageVerticalPercent}%)`
+            : ''
+        }`,
+  );
+  console.log(`  ${row.heroImageUrl}`);
 }
 
 main()
