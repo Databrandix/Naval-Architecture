@@ -21,8 +21,13 @@
  * nothing depends on Cloudinary — PDF delivery is disabled on the account,
  * which is why the syllabus and prospectus are bundled files too.
  *
- * Safe to run again: it overwrites both files, updates the one layout row,
- * and leaves the menu alone if the entry is already there.
+ * Safe to run again: it replaces the PDF, updates the one layout row, and
+ * leaves the menu alone if the entry is already there.
+ *
+ * It does NOT touch a cover that is already set. The drawn cover is a
+ * stand-in for a row that has none; once someone puts a real one there, a
+ * rebuild of the plan must not quietly paint over it. Pass --redraw-cover to
+ * replace it deliberately.
  */
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
@@ -170,15 +175,23 @@ async function main() {
   await writeFile(path.join(assets, pdfFile), pdf);
   await pruneOlder(assets, PDF_STEM, pdfFile);
 
-  const cover = await buildCover(dept ?? { name: '' }, offices);
-  const coverFile = `${COVER_STEM}-${digest(cover)}.jpg`;
-  await writeFile(path.join(assets, coverFile), cover);
-  await pruneOlder(assets, COVER_STEM, coverFile);
+  const existing = await prisma.departmentLayout.findUnique({ where: { slug: SLUG } });
+  const redrawCover = process.argv.includes('--redraw-cover');
+  const needsCover = redrawCover || !existing?.coverUrl;
+
+  let coverUrl = existing?.coverUrl;
+  if (needsCover) {
+    const cover = await buildCover(dept ?? { name: '' }, offices);
+    const coverFile = `${COVER_STEM}-${digest(cover)}.jpg`;
+    await writeFile(path.join(assets, coverFile), cover);
+    await pruneOlder(assets, COVER_STEM, coverFile);
+    coverUrl = `/assets/${coverFile}`;
+  }
 
   const row = {
     title: `${dept?.name ?? 'Department'} — Layout Plan`,
     shortTitle: 'Departmental Layout Plan',
-    coverUrl: `/assets/${coverFile}`,
+    coverUrl,
     pdfUrl: `/assets/${pdfFile}`,
     /* What the browser saves it as — stable and readable, unlike the URL. */
     pdfFileName: 'SU-NAME-Layout-Plan.pdf',
@@ -186,14 +199,18 @@ async function main() {
   };
   await prisma.departmentLayout.upsert({
     where: { slug: SLUG },
-    create: { slug: SLUG, ...row },
+    create: { slug: SLUG, ...row, coverUrl: coverUrl },
     update: row,
   });
 
   await addMenuEntry('/about/department-layout');
 
   console.log(`copied ${path.basename(pdfArg)} → public/assets/${pdfFile}`);
-  console.log(`wrote public/assets/${coverFile} previewing ${offices.length} offices`);
+  console.log(
+    needsCover
+      ? `drew a cover previewing ${offices.length} offices`
+      : `kept the cover already set (${coverUrl}) — pass --redraw-cover to replace it`,
+  );
 }
 
 main()

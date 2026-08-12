@@ -21,11 +21,14 @@ export default function DepartmentLayoutClient({ items }: { items: DepartmentLay
           className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow overflow-hidden flex flex-col w-full max-w-md"
         >
           <div className="bg-gray-50">
+            {/* A hint for the space to hold before the picture arrives, not a
+                size to force — `h-auto` keeps whatever shape the cover has.
+                It says landscape because these covers are wide. */}
             <Image
               src={item.cover}
               alt={item.title}
-              width={600}
-              height={800}
+              width={1200}
+              height={758}
               sizes="(min-width: 640px) 50vw, 100vw"
               className="block w-full h-auto"
             />
