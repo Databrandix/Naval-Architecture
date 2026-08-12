@@ -8,13 +8,15 @@
  * University, not to whichever department's site happens to list them, so
  * they read correctly here as written.
  *
- * One club is deliberately left behind: the Mecha Club is Mechanical
- * Engineering's own society, and this department's counterpart — the SU NAME
- * Club — is already here. Copying it would put another department's student
- * body on this page. See SKIP below.
+ * The Mecha Club is not a university club — it is Mechanical Engineering's
+ * own society — but it is listed here at the department's request, as one of
+ * the societies a Sonargaon student can join. Its description says it
+ * represents the Mechanical Engineering department, which is true, so the
+ * usual renaming is not applied to it: rewriting that line would turn a fact
+ * into a claim this department has a club it does not. See KEEP_WORDING.
  *
- * The department's own club leads the list; the university-wide ones follow
- * in the order the source keeps them.
+ * The department's own club leads the list; the rest follow in the order the
+ * source keeps them.
  *
  * Every picture is a bundled file that the template already left in
  * public/assets, so nothing is uploaded. A club whose picture is missing is
@@ -31,8 +33,12 @@ const prisma = new PrismaClient();
 const source = new PrismaClient({ datasourceUrl: sourceDatabaseUrl() });
 const rename = new DepartmentRenamer();
 
-/** Another department's own society — not a university club. */
-const SKIP = new Set(['sumec']);
+/**
+ * Clubs whose own text names the department they belong to. That naming is
+ * correct and must survive the copy — the renamer exists for text that would
+ * be wrong on this site, not for text that is simply about someone else.
+ */
+const KEEP_WORDING = new Set(['sumec']);
 
 /**
  * The source points this one at a picture in its own Cloudinary folder. The
@@ -56,21 +62,19 @@ async function main() {
   const skipped: string[] = [];
 
   for (const club of clubs) {
-    if (SKIP.has(club.slug)) {
-      skipped.push(`${club.name} — another department's own society`);
-      continue;
-    }
-
     const imageUrl = LOCAL_PICTURE[club.slug] ?? club.imageUrl;
     if (imageUrl.startsWith('/') && !existsSync(path.join(process.cwd(), 'public', imageUrl))) {
       skipped.push(`${club.name} — ${imageUrl} is not in public/assets`);
       continue;
     }
 
+    const asWritten = KEEP_WORDING.has(club.slug);
+    const text = (value: string) => (asWritten ? value : rename.text(value));
+
     const data = {
-      name: rename.text(club.name),
-      abbreviation: rename.text(club.abbreviation),
-      description: rename.text(club.description),
+      name: text(club.name),
+      abbreviation: text(club.abbreviation),
+      description: text(club.description),
       imageUrl,
       imagePublicId: LOCAL_PICTURE[club.slug] ? null : club.imagePublicId,
       displayOrder: order,
@@ -81,11 +85,11 @@ async function main() {
       create: { slug: club.slug, ...data },
       update: data,
     });
-    console.log(`  ${order}. ${data.name}`);
+    console.log(`  ${order}. ${data.name}${asWritten ? '  (wording kept as written)' : ''}`);
     order += 1;
   }
 
-  console.log(`\nUniversity clubs imported: ${order - 1}`);
+  console.log(`\nClubs imported: ${order - 1}`);
   if (own) console.log(`  ${own.name} keeps the top of the list`);
   if (skipped.length > 0) {
     console.log(`  left behind: ${skipped.length}`);
