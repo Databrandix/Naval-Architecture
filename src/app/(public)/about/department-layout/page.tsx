@@ -49,11 +49,15 @@ export default async function DepartmentLayoutPage() {
 
         {mapped.length > 0 && (
           <div className="mt-14 md:mt-20">
+            {/* Names what the document is rather than what the button does —
+                the button says that already. Since the PDF became the
+                department's own issued plan rather than one generated from
+                the table above, that provenance is the reason to take it. */}
             <h2 className="text-primary font-display mb-2 text-center text-xl font-bold md:text-2xl">
-              Download the plan
+              Straight from the department
             </h2>
             <p className="mx-auto mb-8 max-w-xl text-center text-[15px] text-gray-600">
-              The same directory as a printable document.
+              The layout plan as issued — every office and the level it is on.
             </p>
             <DepartmentLayoutClient items={mapped} />
           </div>
