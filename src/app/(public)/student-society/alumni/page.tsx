@@ -31,7 +31,10 @@ export default async function AlumniPage() {
       <Container>
         {alumni.length === 0 ? (
           <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-12 text-center">
-            <p className="text-gray-500">No alumni yet.</p>
+            {/* A department five years old has graduates; what it does not
+                have yet is their details gathered. "No alumni yet" said the
+                first thing and meant the second. */}
+            <p className="text-gray-500">Alumni information will be updated soon.</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
