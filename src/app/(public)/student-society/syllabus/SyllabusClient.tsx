@@ -107,11 +107,17 @@ export default function SyllabusClient({
               }`}
             >
               <div className="bg-gray-50">
+                {/* The height is a hint for the space to reserve before the
+                    picture arrives, not a size to force — `h-auto` keeps
+                    whatever shape the cover actually has. It says 2:1 because
+                    the covers are wide banners; a portrait cover still renders
+                    correctly, it would just settle taller than the gap held
+                    for it. */}
                 <Image
                   src={s.coverUrl}
                   alt={s.title}
-                  width={600}
-                  height={800}
+                  width={1200}
+                  height={600}
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   className="block w-full h-auto"
                 />
