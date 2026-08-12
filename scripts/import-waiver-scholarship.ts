@@ -15,6 +15,12 @@
  *
  *   ME_DATABASE_URL=<connection string> \
  *     npx tsx --env-file=.env scripts/import-waiver-scholarship.ts
+ *
+ * This is seeding, not a sync. Each category is overwritten wholesale, so a
+ * re-run restores anything the department has since taken off these pages —
+ * the Freedom Fighter quota was removed here after the first import, and
+ * running this again would put it back without saying so. Edit the waiver
+ * pages in the admin panel; reach for this only to seed a fresh database.
  */
 
 import { PrismaClient } from '@prisma/client';
