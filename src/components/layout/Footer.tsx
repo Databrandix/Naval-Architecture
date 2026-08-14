@@ -183,14 +183,21 @@ export default function Footer({
             </div>
           </div>
 
-          <div>
-            <h4 className="font-display font-bold text-lg mb-5 border-b border-accent pb-2 inline-block">Quick Link</h4>
-            <ul className="space-y-3 text-sm text-white/70">
-              {quickLinks.map((link) => (
-                <li key={link.id}>{renderFooterLink(link)}</li>
-              ))}
-            </ul>
-          </div>
+          {/* Mobile pairing — Quick Link + Campuses, the same trick used above.
+              `md:contents` dissolves this wrapper from the medium breakpoint
+              up, so the two return to being direct children of the outer grid
+              and keep their own columns. The two-column class is conditional:
+              with no campuses seeded, Quick Link would otherwise sit in half
+              the width with nothing beside it. */}
+          <div className={campusLinks.length > 0 ? 'grid grid-cols-2 gap-6 md:contents' : 'md:contents'}>
+            <div>
+              <h4 className="font-display font-bold text-lg mb-5 border-b border-accent pb-2 inline-block">Quick Link</h4>
+              <ul className="space-y-3 text-sm text-white/70">
+                {quickLinks.map((link) => (
+                  <li key={link.id}>{renderFooterLink(link)}</li>
+                ))}
+              </ul>
+            </div>
 
           {/* Campuses — each row links to a Google Maps query built
               from the campus address. Replaces the previous single
@@ -228,6 +235,7 @@ export default function Footer({
               </ul>
             </div>
           )}
+          </div>
         </div>
 
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
