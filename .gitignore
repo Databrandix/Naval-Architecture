@@ -34,3 +34,6 @@ next-env.d.ts
 
 # Phase 19 — private security audit working notes (must never be committed)
 /.security-audit-notes/
+
+.vercel
+.env*

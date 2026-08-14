@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Mail, Phone, IdCard, Building2, MapPin, Plus } from 'lucide-react';
+import { Mail, IdCard, Building2, MapPin, Plus } from 'lucide-react';
 import type { Faculty } from '@prisma/client';
 import PageShell from '@/components/layout/PageShell';
 import Container from '@/components/ui/Container';
@@ -215,16 +215,9 @@ export default async function FacultyDetailPage({
                 </ContactRow>
               )}
 
-              {member.phone && (
-                <ContactRow label="Phone" Icon={Phone}>
-                  <a
-                    href={`tel:${member.phone}`}
-                    className="text-primary hover:text-accent transition-colors"
-                  >
-                    {member.phone}
-                  </a>
-                </ContactRow>
-              )}
+              {/* A teacher's personal mobile is not published. It is still
+                  recorded against the faculty member for the department's own
+                  use; the public profile offers the email address instead. */}
 
               {member.suId && (
                 <ContactRow label="SU ID" Icon={IdCard}>
