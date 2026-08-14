@@ -7,6 +7,7 @@ import { ChevronRight, Home } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Container from '../ui/Container';
 import { buildTrail } from '@/lib/breadcrumb';
+import { useHomeHref } from './HomeHrefProvider';
 
 const slugToTitle = (slug: string) =>
   slug
@@ -38,6 +39,7 @@ export default function PageShell({
   contentClassName = 'py-12 md:py-16',
 }: PageShellProps) {
   const pathname = usePathname();
+  const homeHref = useHomeHref();
   const segments = pathname.split('/').filter(Boolean);
   const computedOverline =
     overline ?? (segments.length > 1 ? slugToTitle(segments[0]) : 'Department of');
@@ -122,7 +124,7 @@ export default function PageShell({
               className="flex items-center justify-center gap-2 text-white/90 text-xs md:text-[13px] font-medium tracking-wide"
             >
               <a
-                href="/"
+                href={homeHref}
                 className="hover:text-button-yellow flex items-center gap-1.5 transition-colors"
               >
                 <Home size={13} /> Home

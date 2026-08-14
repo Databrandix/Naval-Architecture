@@ -3,6 +3,7 @@ import Footer from '@/components/layout/Footer';
 import JourneyCTASection from '@/components/sections/JourneyCTASection';
 import InitialSplash from '@/components/common/InitialSplash';
 import PublicNavigationOverlay from '@/components/common/PublicNavigationOverlay';
+import { HomeHrefProvider } from '@/components/layout/HomeHrefProvider';
 import PageFadeWrapper from '@/components/layout/PageFadeWrapper';
 import {
   getDepartmentIdentity,
@@ -103,7 +104,9 @@ export default async function PublicLayout({
           client component using usePathname so it re-keys on every
           navigation, retriggering the 250ms opacity fade-in. */}
       <main className="flex-grow">
-        <PageFadeWrapper>{children}</PageFadeWrapper>
+        <HomeHrefProvider href={uni.websiteUrl}>
+          <PageFadeWrapper>{children}</PageFadeWrapper>
+        </HomeHrefProvider>
       </main>
 
       {journeyCTA && (

@@ -124,6 +124,11 @@ model UniversityIdentity {
   tiktokUrl     String?
   whatsappUrl   String?
   threadsUrl    String?
+  /// The university's own website. When set, the breadcrumb's Home link
+  /// points here rather than at this department's front page — the department
+  /// site is a section of the university's, and some trails should say so.
+  /// Left empty, Home keeps pointing at this site's own home page.
+  websiteUrl    String?
   erpUrl        String?
   applyUrl      String?
   libraryUrl    String?

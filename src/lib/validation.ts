@@ -56,6 +56,7 @@ export const universityUpdateSchema = z.object({
   tiktokUrl:    urlOrEmpty,
   whatsappUrl:  urlOrEmpty,
   threadsUrl:   urlOrEmpty,
+  websiteUrl:   urlOrEmpty,
   erpUrl:       urlOrEmpty,
   applyUrl:     urlOrEmpty,
   libraryUrl:   urlOrEmpty,

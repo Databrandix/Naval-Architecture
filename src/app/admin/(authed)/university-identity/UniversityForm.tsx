@@ -57,7 +57,13 @@ export default function UniversityForm({ initial }: { initial: Initial }) {
       </Card>
 
       <Card title="External services">
+        <p className="text-sm text-gray-500 -mt-1 mb-4">
+          Set <strong>University website</strong> to send the breadcrumb&rsquo;s Home link to the
+          university&rsquo;s own site instead of this department&rsquo;s front page. Leave it empty
+          and Home stays where it is.
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <TextField label="University website" name="websiteUrl" defaultValue={initial?.websiteUrl ?? ''} type="url" />
           <TextField label="ERP"     name="erpUrl"     defaultValue={initial?.erpUrl     ?? ''} type="url" />
           <TextField label="Apply"   name="applyUrl"   defaultValue={initial?.applyUrl   ?? ''} type="url" />
           <TextField label="Library" name="libraryUrl" defaultValue={initial?.libraryUrl ?? ''} type="url" />

@@ -45,6 +45,7 @@ export async function updateUniversityAction(
     tiktokUrl:     emptyToNull(formData.get('tiktokUrl')),
     whatsappUrl:   emptyToNull(formData.get('whatsappUrl')),
     threadsUrl:    emptyToNull(formData.get('threadsUrl')),
+    websiteUrl:    emptyToNull(formData.get('websiteUrl')),
     erpUrl:        emptyToNull(formData.get('erpUrl')),
     applyUrl:      emptyToNull(formData.get('applyUrl')),
     libraryUrl:    emptyToNull(formData.get('libraryUrl')),
