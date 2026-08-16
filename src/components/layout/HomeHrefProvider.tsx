@@ -3,17 +3,22 @@
 import { createContext, useContext, type ReactNode } from 'react';
 
 /**
- * Where the breadcrumb's "Home" points.
+ * Where the front page's hero breadcrumb sends "Home".
  *
- * `PageShell` draws the trail and is a client component rendered by each page,
- * not by the layout, so it cannot be handed the value as a prop without
- * touching every page. The layout already reads the university identity for
- * the navbar and footer; this passes that one field the rest of the way down.
+ * Only `HeroSection` reads this, and `HeroSection` only ever renders on the
+ * front page. Every other trail is drawn by `PageShell`, whose Home stays on
+ * this site: from an inner page, "Home" meaning this department's front page
+ * is exactly right. It is on the front page itself that "/" is useless — it
+ * links to the page already open — so there Home goes one level up, to the
+ * university.
  *
- * The default is this site's own home page, which is what a breadcrumb
- * normally means. An administrator who fills in "University website" moves it
- * to the university's site instead — useful where the department site reads as
- * a section of a larger one.
+ * The value comes from `UniversityIdentity.websiteUrl`, so an administrator
+ * sets it rather than a developer. Empty falls back to "/", which restores the
+ * old no-op link rather than breaking the trail.
+ *
+ * It travels by context because `HeroSection` is a client component rendered
+ * by the page, while the value is loaded by the layout for the navbar and
+ * footer; this passes that one field the rest of the way down.
  */
 const HomeHrefContext = createContext<string>('/');
 

@@ -4,6 +4,7 @@ import {useEffect, useState} from 'react';
 import {motion} from 'motion/react';
 import Container from '../ui/Container';
 import {ChevronRight, Home} from 'lucide-react';
+import {useHomeHref} from '../layout/HomeHrefProvider';
 
 // Per-image alt text now comes from DepartmentIdentity.heroImage{N}Alt
 // (Phase 3). When an admin replaces a hero image, they edit the
@@ -44,6 +45,7 @@ export default function HeroSection({
       `Sonargaon University ${departmentTitle} ${FALLBACK_ALT_SUFFIXES[i] ?? `— slide ${i + 1}`}`,
     verticalPercent: imageVerticalPercents[i] ?? 50,
   }));
+  const homeHref = useHomeHref();
   const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
@@ -165,7 +167,11 @@ export default function HeroSection({
             transition={{ delay: 0.9 }}
             className="flex items-center justify-center gap-2 text-white/90 text-xs md:text-[13px] font-medium tracking-wide"
           >
-            <a href="/" className="hover:text-button-yellow flex items-center gap-1.5 transition-colors">
+            {/* This trail sits on the department's own front page, so a Home
+                that pointed at "/" pointed at the page the visitor is already
+                reading. It goes up instead, to the university site. Same tab:
+                it is a step up the same hierarchy, not an outbound link. */}
+            <a href={homeHref} className="hover:text-button-yellow flex items-center gap-1.5 transition-colors">
               <Home size={13} /> Home
             </a>
             <ChevronRight size={13} className="opacity-50" />

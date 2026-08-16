@@ -58,9 +58,11 @@ export default function UniversityForm({ initial }: { initial: Initial }) {
 
       <Card title="External services">
         <p className="text-sm text-gray-500 -mt-1 mb-4">
-          Set <strong>University website</strong> to send the breadcrumb&rsquo;s Home link to the
-          university&rsquo;s own site instead of this department&rsquo;s front page. Leave it empty
-          and Home stays where it is.
+          <strong>University website</strong> is where the &ldquo;Home&rdquo; link in the front
+          page&rsquo;s hero breadcrumb goes. On the front page that link would otherwise point at
+          the page already open, so it goes up to the university site instead. Breadcrumbs on inner
+          pages are unaffected &mdash; their Home stays on this site. Leave it empty and nothing
+          changes.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <TextField label="University website" name="websiteUrl" defaultValue={initial?.websiteUrl ?? ''} type="url" />
