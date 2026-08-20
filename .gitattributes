@@ -15,6 +15,14 @@
 *.sh                          text eol=lf
 *.toml                        text eol=lf
 prisma/migrations/**/*.sql    text eol=lf
+# systemd refuses a unit file with CRLF, sudo rejects a sudoers file with one,
+# and Nginx carries the stray \r into directive values. A Windows round-trip of
+# any of these would break the deploy in a way that reads as a config error.
+*.service                     text eol=lf
+*.timer                       text eol=lf
+deploy/sudoers.name-deploy    text eol=lf
+deploy/nginx.conf.example     text eol=lf
+deploy/build.env.example      text eol=lf
 
 # Mark common binaries so Git doesn't try to diff/normalize them
 *.png      binary

@@ -1,0 +1,20 @@
+# Polls every five minutes. A push therefore goes live 0-5 minutes later, which
+# is the price of not handing GitHub a key to this server.
+#
+# Five minutes rather than anything shorter: a build takes 1-3 minutes, so a
+# tighter interval would mostly find a deployment already running and skip.
+[Unit]
+Description=Poll for new name.su.edu.bd commits
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+# Small jitter so this does not land on the same second as me-deploy.timer,
+# which would put two Next.js builds on the box at once.
+RandomizedDelaySec=60
+# Persistent is left off on purpose: after downtime we want one poll, not a
+# catch-up burst of missed runs.
+Unit=name-deploy.service
+
+[Install]
+WantedBy=timers.target

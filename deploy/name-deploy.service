@@ -1,0 +1,90 @@
+# Pull-based deployment for name.su.edu.bd. Runs once per timer tick, checks
+# whether origin/main has moved, and deploys only if it has.
+#
+#   sudo install -o root -g root -m 0755 deploy/auto-deploy.sh /usr/local/bin/name-deploy
+#   sudo cp deploy/name-deploy.service deploy/name-deploy.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl start name-deploy            # dry run, timer still off
+#   sudo systemctl enable --now name-deploy.timer
+#
+# Runs as name-build, an account that exists only to build this one site. It is
+# deliberately NOT `deploy`: that account owns /var/www/sites/su.edu.bd and
+# belongs to su-web, so a build running as `deploy` could rewrite the main
+# university site.
+[Unit]
+Description=Check for new commits and deploy name.su.edu.bd
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=name-build
+Group=name-build
+# name-build must also be a member of name-web. Changing a file's group requires
+# membership of the target group, and the post-build step hands the ISR server
+# tree to name-web so the running service can write regenerated pages into it.
+
+# Build-time database credentials, and nothing else. systemd reads this file as
+# root before dropping to User=, so the build receives the values in its
+# environment while name-build can never read the file. Runtime secrets are not
+# here on purpose: the build has no use for BETTER_AUTH_SECRET,
+# CLOUDINARY_API_SECRET, RESEND_API_KEY or INITIAL_SUPER_ADMIN_PASSWORD.
+EnvironmentFile=/etc/name-platform/build.env
+
+Environment=NODE_ENV=production
+Environment=NEXT_TELEMETRY_DISABLED=1
+
+WorkingDirectory=/var/www/sites/name.su.edu.bd
+ExecStart=/usr/local/bin/name-deploy
+
+# name-build has no home directory, and ProtectHome= hides /home in any case,
+# so npm and Next.js have nowhere of their own to write. systemd supplies both
+# directories, creates them owned by the service user, and exports the paths.
+StateDirectory=name-build
+CacheDirectory=name-build
+Environment=HOME=%S/name-build
+Environment=npm_config_cache=%C/name-build
+
+# The deploy script takes its lock here; systemd exports the path as
+# $RUNTIME_DIRECTORY and removes the directory when the unit stops.
+RuntimeDirectory=name-deploy
+RuntimeDirectoryMode=0700
+
+# A cold npm ci plus a full Next build. Generous, but bounded.
+TimeoutStartSec=1800
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=name-deploy
+
+# ---------------------------------------------------------------- hardening
+ProtectHome=yes
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+# The whole filesystem is read-only except the paths below. This is what
+# actually keeps a Naval build away from the neighbouring su.edu.bd and
+# me.su.edu.bd deployments: not ownership, but the kernel refusing the write.
+#
+# /run/sudo is required and is not optional cargo. sudo opens its timestamp
+# file under /run/sudo/ts/<uid> BEFORE it checks whether the rule needs
+# authentication at all, so with the rest of the filesystem read-only that open
+# fails, sudo falls back to prompting, and `sudo -n` dies reporting
+# "a password is required" -- which points at the sudoers rule rather than at
+# the sandbox. Verified against the identical me-deploy unit.
+ProtectSystem=strict
+ReadWritePaths=/var/www/sites/name.su.edu.bd
+ReadWritePaths=/var/www/sites/name-platform-cache
+ReadWritePaths=/run/sudo
+
+# Two settings are deliberately absent, and adding either breaks this unit:
+#
+#   NoNewPrivileges   blocks the setuid transition sudo needs, and the last
+#                     step of a deployment restarts the service through sudo.
+#   RestrictSUIDSGID  blocks `chmod g+s`, which the ISR permission repair sets
+#                     on the server/ directories so that route directories
+#                     created at runtime inherit the name-web group.

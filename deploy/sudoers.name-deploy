@@ -1,0 +1,20 @@
+# Installed as /etc/sudoers.d/name-deploy, owner root:root, mode 0440.
+#
+#   sudo visudo -c -f deploy/sudoers.name-deploy
+#   sudo install -o root -g root -m 0440 deploy/sudoers.name-deploy /etc/sudoers.d/name-deploy
+#
+# Validate with visudo BEFORE installing: a malformed file in sudoers.d can
+# lock every account out of sudo.
+#
+# This single line is the whole privilege boundary of the deployment system.
+# The path is absolute and exact (`command -v systemctl` on Ubuntu 24.04 gives
+# /usr/bin/systemctl), and the unit name is spelled out in full. No wildcard,
+# because `systemctl restart *` would also cover su-platform.service and
+# me-platform.service.
+#
+# The grant is to name-build, the account that exists only to build this site --
+# never to `deploy`, which owns /var/www/sites/su.edu.bd and belongs to su-web.
+#
+# What this deliberately does NOT grant: nginx, apt, any shell, any filesystem
+# command, any PostgreSQL access, and any unit other than name-platform.service.
+name-build ALL=(root) NOPASSWD: /usr/bin/systemctl restart name-platform.service

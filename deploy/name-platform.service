@@ -1,0 +1,90 @@
+# systemd unit for the Naval Architecture department site (name.su.edu.bd).
+#
+#   sudo cp deploy/name-platform.service /etc/systemd/system/name-platform.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now name-platform
+#   journalctl -u name-platform -f
+#
+# Runs beside su-platform (3001) and me-platform (3002) on the same host and
+# shares nothing with them: its own service user, port, release directory,
+# database cluster and Nginx vhost.
+[Unit]
+Description=SU Naval Architecture department site (Next.js standalone)
+After=network-online.target postgresql@18-main.service
+Wants=network-online.target
+# Wants, not Requires: a database restart should not take the site down with
+# it. Note this is the PostgreSQL 18 cluster on 5433, not the 16/main cluster
+# that serves su.edu.bd.
+Wants=postgresql@18-main.service
+
+[Service]
+Type=simple
+User=name-web
+Group=name-web
+
+# The standalone server calls process.chdir(__dirname) on start, so it resolves
+# ./public and ./.next from here regardless of what is set below. Both are
+# symlinks back into the project, recreated by the postbuild step
+# (scripts/link-standalone-assets.mjs) on every build.
+WorkingDirectory=/var/www/sites/name.su.edu.bd/.next/standalone
+
+# Root-owned, mode 600. systemd reads it as root before dropping privileges, so
+# neither name-build nor name-web can read the file. Must be plain KEY=value
+# lines: systemd does not evaluate `export`, shell expansion, or multi-line
+# values, and treats a trailing `# comment` after a value as part of the value.
+EnvironmentFile=/var/www/sites/name.su.edu.bd/.env.production
+
+# After EnvironmentFile on purpose: later assignments win, so these three are
+# fixed here rather than left to whatever the secrets file happens to carry.
+Environment=NODE_ENV=production
+Environment=PORT=3003
+Environment=HOSTNAME=127.0.0.1
+
+ExecStart=/usr/bin/node server.js
+
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=name-platform
+
+# ---------------------------------------------------------------- hardening
+# Safe to set here, unlike in name-deploy.service: this unit never calls sudo
+# and never sets a setgid bit.
+NoNewPrivileges=true
+RestrictSUIDSGID=true
+
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+# The whole filesystem is read-only except the two paths below, which are the
+# only places this process legitimately writes.
+#
+# Both are REAL paths, deliberately. `.next/standalone/.next/cache` is a symlink
+# to the cache directory, and systemd resolves ReadWritePaths against the real
+# filesystem: listing the link would not make its target writable. The target
+# is therefore named directly.
+#
+#   server/   Next.js filesystem ISR does not keep regenerated pages in
+#             .next/cache. It writes them back into the server bundle as
+#             server/app/<route>.html, .rsc and .meta. Omitting this path gives
+#             EACCES on the first revalidation, hours after a deployment looked
+#             successful.
+#   cache/    fetch cache and optimised images, reached through the symlink.
+#
+# Both must exist when the unit starts; a build creates them, and the deploy
+# script restarts the service only after a successful build.
+ProtectSystem=strict
+ReadWritePaths=/var/www/sites/name.su.edu.bd/.next/standalone/.next/server
+ReadWritePaths=/var/www/sites/name-platform-cache
+
+[Install]
+WantedBy=multi-user.target
