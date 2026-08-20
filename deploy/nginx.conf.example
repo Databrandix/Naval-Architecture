@@ -1,0 +1,108 @@
+# Nginx reverse proxy for name.su.edu.bd on the Hostinger VPS (Ubuntu 24.04).
+#
+#   sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/name-platform
+#   sudo ln -s /etc/nginx/sites-available/name-platform /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+#   sudo certbot --nginx -d name.su.edu.bd --redirect
+#
+# This template serves the site over plain HTTP and contains NO redirect. That
+# is deliberate, and it is the part most likely to be "corrected" by mistake.
+#
+# `certbot --nginx` builds the TLS server block by COPYING this one and adding
+# the ssl_certificate directives. If this block ended in
+# `return 301 https://$host$request_uri`, the generated 443 block would carry
+# that same line, and every HTTPS request would redirect to itself forever. The
+# config still passes `nginx -t`, and the failure only appears once the
+# certificate is live, which makes it expensive to diagnose.
+#
+# So: proxy here, and let `--redirect` add the HTTP-to-HTTPS rule to the port 80
+# block after the certificate exists. Certbot writes a rule that excludes the
+# ACME path, which a hand-written redirect usually forgets.
+#
+# DNS must resolve name.su.edu.bd to this host BEFORE certbot runs; the HTTP-01
+# challenge is fetched from the public internet. This file does not configure
+# DNS.
+#
+# Security headers are set by the application (next.config.ts) and are
+# deliberately not duplicated here; duplicating them produces conflicting
+# values.
+
+upstream name_platform {
+    # Port 3003. su-platform holds 3001 and me-platform holds 3002 on this
+    # host; they must not collide.
+    server 127.0.0.1:3003;
+    keepalive 32;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name name.su.edu.bd;
+
+    # Kept ahead of everything else so the challenge is served from disk even
+    # after certbot adds its redirect to this block.
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+
+    # Admin CMS uploads pass through Node on their way to Cloudinary, so the
+    # proxy limit has to clear whatever the application accepts, or the upload
+    # fails here with a 413 before the app's own size check ever runs.
+    client_max_body_size 12M;
+
+    # Compress text responses. Images and PDFs are already compressed.
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css application/javascript application/json
+               application/xml image/svg+xml font/woff2;
+
+    access_log /var/log/nginx/name-platform.access.log;
+    error_log  /var/log/nginx/name-platform.error.log;
+
+    # Immutable build assets: hashed filenames, safe to cache forever.
+    location /_next/static/ {
+        proxy_pass http://name_platform;
+        proxy_cache_valid 200 365d;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        access_log off;
+    }
+
+    # No /uploads/ alias, unlike the su.edu.bd vhost: this site stores CMS media
+    # on Cloudinary, so nothing is written to disk and there is no upload
+    # directory for Nginx to serve.
+
+    location / {
+        proxy_pass http://name_platform;
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        "upgrade";
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        # Certbot's TLS block sets $scheme to https, so the application sees the
+        # correct protocol and Better Auth builds https:// callback URLs.
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+
+        proxy_connect_timeout 10s;
+        proxy_send_timeout    60s;
+        proxy_read_timeout    60s;
+
+        proxy_buffering on;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# After `certbot --nginx -d name.su.edu.bd --redirect` there will be two server
+# blocks: this one, with a redirect certbot inserted, and a 443 block carrying
+# the same proxy configuration plus:
+#
+#   ssl_certificate     /etc/letsencrypt/live/name.su.edu.bd/fullchain.pem;
+#   ssl_certificate_key /etc/letsencrypt/live/name.su.edu.bd/privkey.pem;
+#
+# Confirm afterwards that the 443 block really does contain `proxy_pass
+# http://name_platform` and not a redirect:
+#
+#   sudo nginx -T | awk '/listen 443/,/^}/' | grep -E 'server_name|proxy_pass|return'
