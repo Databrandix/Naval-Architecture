@@ -36,7 +36,7 @@ one process:
 | File | Owner | Mode | Contents | Read by |
 |---|---|---|---|---|
 | `/etc/name-platform/build.env` | `root:root` | `0600` | `DATABASE_URL`, `DIRECT_URL` — the **`name_build`** role | the build, via `name-deploy.service` |
-| `/var/www/sites/name.su.edu.bd/.env.production` | `root:root` | `0600` | every runtime secret — the **`name_app`** role | the app, via `name-platform.service` |
+| `/etc/name-platform/.env.production` | `root:root` | `0600` | every runtime secret — the **`name_app`** role | the app, via `name-platform.service` |
 
 Neither `name-build` nor `name-web` can read either file. systemd reads them as
 root and only then drops privileges, so the values exist in a process
@@ -86,8 +86,8 @@ sudo nano /etc/name-platform/build.env          # see deploy/build.env.example
 
 # 5. (root) Runtime secrets — name_app role, plus auth, Cloudinary, Resend.
 sudo install -o root -g root -m 0600 /dev/null \
-  /var/www/sites/name.su.edu.bd/.env.production
-sudo nano /var/www/sites/name.su.edu.bd/.env.production
+  /etc/name-platform/.env.production
+sudo nano /etc/name-platform/.env.production
 
 # 6. (root) Sudoers. Validate BEFORE installing — a malformed file in
 #    sudoers.d locks every account out of sudo.

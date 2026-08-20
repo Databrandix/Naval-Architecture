@@ -32,7 +32,7 @@ WorkingDirectory=/var/www/sites/name.su.edu.bd/.next/standalone
 # neither name-build nor name-web can read the file. Must be plain KEY=value
 # lines: systemd does not evaluate `export`, shell expansion, or multi-line
 # values, and treats a trailing `# comment` after a value as part of the value.
-EnvironmentFile=/var/www/sites/name.su.edu.bd/.env.production
+EnvironmentFile=/etc/name-platform/.env.production
 
 # After EnvironmentFile on purpose: later assignments win, so these three are
 # fixed here rather than left to whatever the secrets file happens to carry.
