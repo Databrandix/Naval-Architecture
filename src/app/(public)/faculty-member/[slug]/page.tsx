@@ -49,7 +49,7 @@ type SectionKey =
 const SECTIONS: { key: SectionKey; label: string }[] = [
   { key: 'academicQualification', label: 'Academic Qualification' },
   { key: 'trainingExperience',    label: 'Training Experience' },
-  { key: 'teachingArea',          label: 'Teaching Area' },
+  { key: 'teachingArea',          label: 'Teaching Experiences' },
   { key: 'publications',          label: 'Publication' },
   { key: 'research',              label: 'Research' },
   { key: 'awards',                label: 'Award & Scholarship' },
@@ -189,9 +189,14 @@ export default async function FacultyDetailPage({
                 {member.secondaryTitle && (
                   <p className="text-sm text-gray-600">{member.secondaryTitle}</p>
                 )}
+                {/* Everyone here belongs to this department — except the
+                    Dean, who heads the whole faculty and holds his chair in
+                    another department entirely. Printing the department name
+                    against him was simply wrong, so his line names the
+                    faculty he actually leads. */}
                 <p className="text-sm text-gray-600 flex items-center justify-center lg:justify-start gap-2 pt-1">
                   <Building2 size={14} className="text-accent shrink-0" />
-                  {dept.name}
+                  {member.isDean ? dept.facultyName : dept.name}
                 </p>
               </div>
             </div>
